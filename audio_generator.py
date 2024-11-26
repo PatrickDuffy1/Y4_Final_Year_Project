@@ -1,11 +1,15 @@
+from datetime import datetime
 import torch
 from TTS.api import TTS
 
-DEFAULT_OUTPUT_FILE_PATH = "./outputs/output.wav"
+DEFAULT_OUTPUT_FILE_FOLDER = "./outputs"
+AUDIO_FILE_EXTENSION = ".wav"
+DEFAULT_OUTPUT_FILE_NAME = "output"
 
 def generate_audio(text, file, voice):
-
-    output_file_path = DEFAULT_OUTPUT_FILE_PATH
+    
+    # Set the output audio file name to the current timestamp
+    output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_") + AUDIO_FILE_EXTENSION
     
     # Use cuda if available, otherwise use the cpu
     device = "cuda" if torch.cuda.is_available() else "cpu"
