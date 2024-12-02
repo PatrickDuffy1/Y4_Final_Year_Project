@@ -68,6 +68,9 @@ def limit_sentence_length(text, max_line_length):
         
         print("\n\nline:\n", line)
         
+        # Limit the size of the words in the text
+        line = limit_word_size(line)
+        
         # Check if the current line is greater than max_line_length
         if len(line) > max_line_length:
             
@@ -84,7 +87,7 @@ def limit_sentence_length(text, max_line_length):
     
     filtered_text = [line for line in text if line]
     
-    # Convert the lines back into a single string and return them
+    # Convert the lines back into a single string and return it
     return '\n'.join(filtered_text) + '\n' if filtered_text else ''
     
 
@@ -136,3 +139,30 @@ def split_line(line):
     line = line[:space_index] + "\n" + line[space_index + 1:]
     
     return line
+    
+
+# Split words that are over max_line_length characters in length
+def limit_word_size(line):
+    
+    # Split the line into individual words
+    line = line.split()
+    result = []
+    
+    # Set the maximum word length
+    max_word_size = 19
+    
+    # Loop through every word in the line
+    for word in line:
+    
+        # Check if the current word is greater than max_word_size
+        if len(word) > max_word_size:
+            # Split the long word into chunks of max_word_size characters
+            chunks = [word[i:i + max_word_size] for i in range(0, len(word), max_word_size)]
+            result.append("\n".join(chunks))
+        else:
+            result.append(word)
+    
+    # Convert the words back into a single string
+    final_result = " ".join(result)
+    
+    return final_result
