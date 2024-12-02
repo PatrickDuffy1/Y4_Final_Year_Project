@@ -2,10 +2,12 @@ from datetime import datetime
 import torch
 import re
 from TTS.api import TTS
+import os
 
 DEFAULT_OUTPUT_FILE_FOLDER = "./outputs"
 AUDIO_FILE_EXTENSION = ".wav"
 DEFAULT_OUTPUT_FILE_NAME = "output"
+MAX_LINE_LENGTH = 600
 
 def generate_audio(text, file, voice):
     
@@ -22,6 +24,10 @@ def generate_audio(text, file, voice):
     
     # Clean the text
     text = clean_text(text)
+    
+    # Limit the sentence length in the text if a max length has been set
+    if MAX_LINE_LENGTH > 0:
+        text = limit_sentence_length(text, MAX_LINE_LENGTH)
         
     # Run TTS
     tts.tts_to_file(text, speaker_wav=voice, language="en", file_path=output_file_path)
@@ -49,3 +55,84 @@ def clean_text(text):
     text = re.sub(place_holder, '. ', text)
     
     return text
+    
+
+# Split sentences that are over max_line_length characters in length
+def limit_sentence_length(text, max_line_length):
+    
+    # Split text by new lines
+    text = text.split("\n")
+    
+    # Loop through all lines
+    for i, line in enumerate(text):
+        
+        print("\n\nline:\n", line)
+        
+        # Check if the current line is greater than max_line_length
+        if len(line) > max_line_length:
+            
+            # Split the line
+            line = split_line(line)
+            
+            # Recursive call this function to limit the size of the split lines 
+            line = limit_sentence_length(line, max_line_length)
+        
+        # Add new lines back into the list of lines
+        line = line + "\n"
+        line = os.linesep.join([s for s in line.splitlines() if s])
+        text[i] = line.replace("\n\n", "\n").lstrip(" ").rstrip(" ")
+    
+    filtered_text = [line for line in text if line]
+    
+    # Convert the lines back into a single string and return them
+    return '\n'.join(filtered_text) + '\n' if filtered_text else ''
+    
+
+# Split a line
+def split_line(line):
+    
+    # Find the halfway point of the line
+    half_index = round(len(line) / 2)
+    
+    # Half the line and create two strings
+    first_half_string = line[:half_index]
+    second_half_string = line[half_index:]
+    
+    # Find the closest full stop the the halfway point of the original line
+    first_full_stop_index = first_half_string.rfind(".")
+    second_full_stop_index = second_half_string.find(".")
+    
+    # Find the closest space the the halfway point of the original line
+    first_space_index = first_half_string.rfind(" ")
+    second_space_index = second_half_string.find(" ")
+    
+    # Find the closest full stop to the halfway point (if it exists), and split the line at that point.
+    # If a full stop is not in the line, split at the closest space to the halfway point.
+    # Otherwise, split line in half
+    if first_full_stop_index >= 0 and second_full_stop_index >= 0:
+        
+        if (len(first_half_string) - first_full_stop_index) < second_full_stop_index:
+            space_index = first_full_stop_index
+            
+        elif (len(first_half_string) - first_full_stop_index) >= second_full_stop_index:
+            space_index = second_full_stop_index + len(first_half_string)
+                                
+    elif first_full_stop_index >= 0:
+        space_index = first_full_stop_index
+        
+    elif second_full_stop_index >= 0:
+        space_index = second_full_stop_index + len(first_half_string)
+        
+    elif (len(first_half_string) - first_space_index) < second_space_index:
+        space_index = first_space_index
+        
+    elif (len(first_half_string) - first_space_index) >= second_space_index:
+        space_index = second_space_index + len(first_half_string)
+    
+    else:
+        space_index = half_index
+    
+    # Insert a newline at the split point to split the lines
+    line = line[:space_index] + "\n" + line[space_index + 1:]
+    
+    return line
