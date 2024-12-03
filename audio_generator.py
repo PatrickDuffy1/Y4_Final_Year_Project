@@ -9,7 +9,7 @@ AUDIO_FILE_EXTENSION = ".wav"
 DEFAULT_OUTPUT_FILE_NAME = "output"
 MAX_LINE_LENGTH = 600
 
-def generate_audio(text, file, voice):
+def generate_audio(text, voice):
     
     # Set the output audio file name to the current timestamp
     output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_") + AUDIO_FILE_EXTENSION
@@ -34,6 +34,17 @@ def generate_audio(text, file, voice):
     
     # Return the path to the created audio file
     return output_file_path
+    
+    
+def generate_audio_from_file(file_path, voice):
+    
+    text = ""
+    
+    # Read the file
+    with open(file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+        
+    return generate_audio(text, voice)
     
 
 # Clean unwanted characters from text

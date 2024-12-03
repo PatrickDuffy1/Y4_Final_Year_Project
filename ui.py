@@ -1,5 +1,5 @@
 import gradio as gr
-from audio_generator import generate_audio
+from audio_generator import generate_audio, generate_audio_from_file
 from os import listdir
 from os.path import isfile, join
 
@@ -24,8 +24,14 @@ def get_voices():
 # Generate the audio using the chosen text/file, and the chosen voice
 def gradio_generate_audio(text, file, voice):
     
-    audio = generate_audio(text, file, voice)
-
+    # Use textbox as default. If there is no text in the textbox, use file, If there is neither, print message
+    if text:
+        audio = generate_audio(text, voice)
+    elif file:
+        audio = generate_audio_from_file(file.name, voice)
+    else:
+        return "Please provide either text or a file."
+    
     return audio
     
 
