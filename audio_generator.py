@@ -3,6 +3,7 @@ import torch
 import re
 from TTS.api import TTS
 import os
+from file_reader import read_file
 
 DEFAULT_OUTPUT_FILE_FOLDER = "./outputs"
 AUDIO_FILE_EXTENSION = ".wav"
@@ -38,11 +39,8 @@ def generate_audio(text, voice):
     
 def generate_audio_from_file(file_path, voice):
     
-    text = ""
-    
-    # Read the file
-    with open(file_path, "r", encoding="utf-8") as f:
-        text = f.read()
+    # Read the given file
+    text = read_file(file_path)
         
     return generate_audio(text, voice)
     
