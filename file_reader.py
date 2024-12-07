@@ -1,3 +1,5 @@
+import epub_file_reader
+
 def read_file(file_path):
     
     try:
@@ -28,8 +30,7 @@ def read_epub_file(file_path):
     
     print("Reading .epub file:", file_path)
     
-    # TODO: Implement epub_file_reader
-    #text = epub_file_reader.read_epub_file(file_path)
+    text = epub_file_reader.read_epub_file(file_path)
     
     raise Exception("Not yet implemented")
     
