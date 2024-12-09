@@ -32,6 +32,4 @@ def read_epub_file(file_path):
     
     text = epub_file_reader.read_epub_file(file_path)
     
-    raise Exception("Not yet implemented")
-    
-    return ""
+    return text

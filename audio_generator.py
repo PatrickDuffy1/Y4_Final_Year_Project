@@ -7,13 +7,11 @@ from file_reader import read_file
 
 DEFAULT_OUTPUT_FILE_FOLDER = "./outputs"
 AUDIO_FILE_EXTENSION = ".wav"
-DEFAULT_OUTPUT_FILE_NAME = "output"
 MAX_LINE_LENGTH = 600
 
-def generate_audio(text, voice):
-    
-    # Set the output audio file name to the current timestamp
-    output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_") + AUDIO_FILE_EXTENSION
+
+# Load TTS model
+def load_model():
     
     # Use cuda if available, otherwise use the cpu
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -23,26 +21,66 @@ def generate_audio(text, voice):
     # Load TTS model
     tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
     
-    # Clean the text
-    text = clean_text(text)
+    return tts
+    
+
+def generate_audio(text, voice, tts, output_path):
     
     # Limit the sentence length in the text if a max length has been set
     if MAX_LINE_LENGTH > 0:
         text = limit_sentence_length(text, MAX_LINE_LENGTH)
         
+    # Clean the text
+    text = clean_text(text)
+        
     # Run TTS
-    tts.tts_to_file(text, speaker_wav=voice, language="en", file_path=output_file_path)
+    tts.tts_to_file(text, speaker_wav=voice, language="en", file_path=output_path)
     
     # Return the path to the created audio file
-    return output_file_path
+    return output_path
     
+ 
+def generate_audio_from_text(text, voice):
     
+    # Load the tts model
+    tts = load_model()
+
+    # Set the output audio file name to the current timestamp
+    output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + AUDIO_FILE_EXTENSION
+    
+    return generate_audio(text, voice, tts, output_file_path)
+
+
 def generate_audio_from_file(file_path, voice):
-    
-    # Read the given file
-    text = read_file(file_path)
         
-    return generate_audio(text, voice)
+    # Read the given file
+    text = read_file(file_path) 
+    
+    # Check if there are multiple sections/chapters
+    if isinstance(text, list) == False:
+    
+        # Use the generate_audio_from_text function if there is not multiple sections
+        return generate_audio_from_text(text, voice) 
+    
+    # Load the tts model
+    tts = load_model()
+    
+    chapter_paths = []
+    
+    # Set the output audio folder name to the current timestamp
+    output_folder_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + "/"
+    
+    # Create output folder if it does not exist
+    if not os.path.exists(output_folder_path):
+        os.makedirs(output_folder_path)
+    
+    # Call the generate_audio function for every section/chapter in the text
+    for i, chapter in enumerate(text):
+        output_file_path = output_folder_path + str(i) + AUDIO_FILE_EXTENSION
+        chapter_paths.append(generate_audio(text[i], voice, tts, output_file_path))
+    
+    # Return the audio file path of the first section of the text
+    return chapter_paths[0]
     
 
 # Clean unwanted characters from text
@@ -53,6 +91,10 @@ def clean_text(text):
     text = text.replace("”", '"').replace("“", '"').replace("’", "'").replace("''", "'").replace('""', '"')
     text = text.replace("Mr.", "Mr").replace("Mrs.", "Mrs").replace("Dr.", "Dr").replace("Co.", "Co")
     text = text.replace("!.", "!").replace("?.", "?").replace("'.", "'").replace("\".", "\"")
+    text = text.replace(" .", "")
+    
+    # Remove double periods '..' but keep '...' and '.'
+    text = re.sub(r'(?<!\.)\.\.(?!\.)', '', text)
     
     # Remove any characters that are not letters or certain special characters
     text = re.sub(r'[^a-zA-Z0-9\s,.\'"!?():;&\n-]', '', text)

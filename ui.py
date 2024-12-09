@@ -1,5 +1,5 @@
 import gradio as gr
-from audio_generator import generate_audio, generate_audio_from_file
+from audio_generator import generate_audio_from_text, generate_audio_from_file
 from os import listdir
 from os.path import isfile, join
 
@@ -26,7 +26,7 @@ def gradio_generate_audio(text, file, voice):
     
     # Use textbox as default. If there is no text in the textbox, use file, If there is neither, print message
     if text:
-        audio = generate_audio(text, voice)
+        audio = generate_audio_from_text(text, voice)
     elif file:
         audio = generate_audio_from_file(file.name, voice)
     else:
@@ -48,6 +48,7 @@ demo = gr.Interface(
             ),
         ],
     outputs=["audio"], # Output box for audio file
+    allow_flagging="never",  # Disables the flagging functionality
 )
 
 # Run the interface
