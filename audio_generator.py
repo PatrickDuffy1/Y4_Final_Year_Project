@@ -6,7 +6,7 @@ import os
 from file_reader import read_file
 
 DEFAULT_OUTPUT_FILE_FOLDER = "./outputs"
-AUDIO_FILE_EXTENSION = ".wav"
+DEFAULT_AUDIO_FILE_EXTENSION = ".mp3"
 MAX_LINE_LENGTH = 600
 
 
@@ -24,7 +24,7 @@ def load_model():
     return tts
     
 
-def generate_audio(text, voice, tts, output_path):
+def generate_audio(text, voice, tts, output_path, ouput_file_type):
     
     # Limit the sentence length in the text if a max length has been set
     if MAX_LINE_LENGTH > 0:
@@ -40,18 +40,18 @@ def generate_audio(text, voice, tts, output_path):
     return output_path
     
  
-def generate_audio_from_text(text, voice):
+def generate_audio_from_text(text, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION):
     
     # Load the tts model
     tts = load_model()
 
     # Set the output audio file name to the current timestamp
-    output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + AUDIO_FILE_EXTENSION
+    output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + ouput_file_type
     
-    return generate_audio(text, voice, tts, output_file_path)
+    return generate_audio(text, voice, tts, output_file_path, ouput_file_type)
 
 
-def generate_audio_from_file(file_path, voice):
+def generate_audio_from_file(file_path, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION):
         
     # Read the given file
     text = read_file(file_path) 
@@ -76,7 +76,7 @@ def generate_audio_from_file(file_path, voice):
     
     # Call the generate_audio function for every section/chapter in the text
     for i, chapter in enumerate(text):
-        output_file_path = output_folder_path + str(i) + AUDIO_FILE_EXTENSION
+        output_file_path = output_folder_path + str(i) + ouput_file_type
         chapter_paths.append(generate_audio(text[i], voice, tts, output_file_path))
     
     # Return the audio file path of the first section of the text
@@ -97,7 +97,7 @@ def clean_text(text):
     text = re.sub(r'(?<!\.)\.\.(?!\.)', '', text)
     
     # Remove any characters that are not letters or certain special characters
-    text = re.sub(r'[^a-zA-Z0-9\s,.\'"!?():;&\n-]', '', text)
+    text = re.sub(r'[^a-zA-Z0-9\s,.\'"!?()\[\]:;&\n-]', '', text)
     
     # Ensure every line ends with a full stop
     place_holder = "PLACE_HOLDER_STRING"

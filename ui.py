@@ -22,7 +22,7 @@ def get_voices():
     
 
 # Generate the audio using the chosen text/file, and the chosen voice
-def gradio_generate_audio(text, file, voice):
+def gradio_generate_audio(text, file, voice, output_file_type):
     
     # Use textbox as default. If there is no text in the textbox, use file, If there is neither, print message
     if text:
@@ -46,7 +46,8 @@ demo = gr.Interface(
                 label="Voice", 
                 value="./voices/voice_1.wav" # Default voice
             ),
-        ],
+        gr.Radio(["mp3", "wav"], label="Output file type", value="mp3"), # Radio button for output file type
+    ],
     outputs=["audio"], # Output box for audio file
     allow_flagging="never",  # Disables the flagging functionality
 )
