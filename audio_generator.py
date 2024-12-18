@@ -6,7 +6,7 @@ import os
 from file_reader import read_file
 
 DEFAULT_OUTPUT_FILE_FOLDER = "./outputs"
-DEFAULT_AUDIO_FILE_EXTENSION = ".mp3"
+DEFAULT_AUDIO_FILE_EXTENSION = ".wav"
 MAX_LINE_LENGTH = 600
 
 
@@ -24,7 +24,7 @@ def load_model():
     return tts
     
 
-def generate_audio(text, voice, tts, output_path, ouput_file_type):
+def generate_audio(text, voice, tts, output_path):
     
     # Limit the sentence length in the text if a max length has been set
     if MAX_LINE_LENGTH > 0:
@@ -48,11 +48,11 @@ def generate_audio_from_text(text, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXT
     # Set the output audio file name to the current timestamp
     output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + ouput_file_type
     
-    return generate_audio(text, voice, tts, output_file_path, ouput_file_type)
+    return generate_audio(text, voice, tts, output_file_path)
 
 
-def generate_audio_from_file(file_path, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION):
-        
+def generate_audio_from_file(file_path, voice, output_folder, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION):
+       
     # Read the given file
     text = read_file(file_path) 
     
@@ -67,15 +67,31 @@ def generate_audio_from_file(file_path, voice, ouput_file_type=DEFAULT_AUDIO_FIL
     
     chapter_paths = []
     
-    # Set the output audio folder name to the current timestamp
-    output_folder_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + "/"
+    using_existing_folder = False
+    
+    if output_folder != "":
+        output_folder_path = output_folder
+        using_existing_folder = True
+    else:
+        # Set the output audio folder name to the current timestamp
+        output_folder_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + "/"
+    
     
     # Create output folder if it does not exist
     if not os.path.exists(output_folder_path):
         os.makedirs(output_folder_path)
+        using_existing_folder = False
+        
+    start_index = 0
+        
+    if using_existing_folder:
+        start_index = len(os.listdir(output_folder_path))
+        print("Folder: ", output_folder_path)
+        print("LENGTH: ", len(os.listdir(output_folder_path)), "\n\n\n\n")
+        #raise Exception()
     
     # Call the generate_audio function for every section/chapter in the text
-    for i, chapter in enumerate(text):
+    for i in range(start_index, len(text)):
         output_file_path = output_folder_path + str(i) + ouput_file_type
         chapter_paths.append(generate_audio(text[i], voice, tts, output_file_path))
     
