@@ -169,6 +169,3 @@ outputs/
 
 # Gradio Flagged Folder
 flagged/
-
-# Model files
-models/
