@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "properties": {
+        "characters": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "character_name": {"type": "string"}
+                },
+                "required": ["character_name"]
+            }
+        }
+    },
+    "required": ["characters"]
+}
