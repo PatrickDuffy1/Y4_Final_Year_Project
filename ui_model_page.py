@@ -24,7 +24,7 @@ def get_files_in_directory(directory_path, files_to_ignore):
     
 
 # Load the LLM
-def load_model(local_model_path, huggingface_model_path, repo_id, context_length, gpu_layers):
+def load_model(local_model_path, huggingface_model_path, repo_id, context_length, gpu_layers, temperature, seed):
     
     if local_model_path:
         model_path = local_model_path
@@ -34,18 +34,23 @@ def load_model(local_model_path, huggingface_model_path, repo_id, context_length
     else:
         return "Invalid model path"
     
-    model_info = {
+    model_settings = {
         "file_name": model_path,
         "repo_id": repo_id,
         "n_gpu_layers": gpu_layers,
         "n_ctx": context_length
     }
     
+    generation_settings = {
+        "temperature": temperature,
+        "seed": int(seed)
+    }
+    
     global llm
     
-    llm = load_llm_model(model_info)
+    llm = load_llm_model(model_settings)
     
-    return "Loaded model: " + str(model_info)
+    return "Loaded model: " + str(model_settings)
 
 
 model_page = gr.Interface(
@@ -59,8 +64,10 @@ model_page = gr.Interface(
             ),
         "text", # Text box for model paths
         "text", # Text box for repo ids
-        gr.Slider(0, 131072, value=16384, label="Context size", info="Context siz of model. Suggested to leave at default"),
+        gr.Slider(0, 131072, value=16384, label="Context size", info="Context size of model. Suggested to leave at default"),
         gr.Slider(0, 100, value=0, label="GPU layers to offload", info="Number of GPU layers to offload. Requires a compatible GPU"),
+        gr.Slider(0, 1, value=0.7, label="Temperature", info="Temperature of model. Higher values have more randomness"),
+        gr.Textbox("-1"), # Text box for seed
     ],
     outputs=["text"], # Output box for audio file
     allow_flagging="never",  # Disables the flagging functionality
