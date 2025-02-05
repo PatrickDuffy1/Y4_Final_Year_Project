@@ -99,7 +99,3 @@ test_chapter_interface = gr.Interface(
     outputs=["text"], # Output box for audio file
     allow_flagging="never",  # Disables the flagging functionality
 )
-
-gr.TabbedInterface(
-    [model_page, test_chapter_interface], ["Model", "Test Chapter"]
-).launch()
