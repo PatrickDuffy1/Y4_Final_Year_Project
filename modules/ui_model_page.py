@@ -1,26 +1,9 @@
 import gradio as gr
 from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
-from os import listdir, getcwd
-from os.path import isfile, join
+from utils import get_files_in_directory
 
 llm = None
-
-# Returns a list of all the file paths in the given folder
-def get_files_in_directory(directory_path, files_to_ignore):
-    
-    file_paths = []
-    
-    # Loop through all of the files in the given directory
-    for file_path in listdir(directory_path):
-    
-        # Ignore anything that is a directory or text file
-        if isfile(join(directory_path, file_path)) and file_path[-4:] not in files_to_ignore:
-            
-            # Add the file to the list of valid files
-            file_paths.append(join(directory_path, file_path).replace("\\", "/"))
-        
-    return file_paths
     
 
 # Load the LLM
