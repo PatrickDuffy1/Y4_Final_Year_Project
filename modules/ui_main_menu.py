@@ -6,10 +6,11 @@ from utils import get_files_in_directory, get_folders_in_directory
 class UiMainPage:
     def __init__(self, session):
         self._session = session
+        self.main_menu = self.get_gradio_page()
     
 
     # Generate the audio using the chosen text/file, and the chosen voice
-    def gradio_generate_audio(input_text, input_file, voice, output_file_type, existing_ouput_folder, new_output_folder):
+    def gradio_generate_audio(self, input_text, input_file, voice, output_file_type, existing_ouput_folder, new_output_folder):
 
         output_folder = ""
         output_file_type = "." + output_file_type
@@ -33,29 +34,31 @@ class UiMainPage:
         
         return audio
         
-
-    main_menu = gr.Interface(
-        fn=gradio_generate_audio,
-        inputs=[
-            "text", # Input box for text
-            "file", # Input box for files
-            
-            # Dropdown menu for voices
-            gr.Dropdown(
-                    choices=set(["../voices/voice_1.wav"] + get_files_in_directory("../voices", [".txt"])), # Get all of the available voices
-                    label="Voice", 
-                    value="../voices/voice_1.wav" # Default voice
-                ),
+    
+    def get_gradio_page(self):
+    
+        return gr.Interface(
+            fn=self.gradio_generate_audio,
+            inputs=[
+                "text", # Input box for text
+                "file", # Input box for files
                 
-            gr.Radio(["mp3", "wav"], label="Output file type", value="wav"), # Radio button for output file type
-            
-            gr.Dropdown(
-                    choices=get_folders_in_directory("../outputs"), # Get all of the available folders
-                    label="Outputs"
-                ),
-            "text",
-        ],
-        outputs=["audio"], # Output box for audio file
-        allow_flagging="never",  # Disables the flagging functionality
-    )
+                # Dropdown menu for voices
+                gr.Dropdown(
+                        choices=set(["../voices/voice_1.wav"] + get_files_in_directory("../voices", [".txt"])), # Get all of the available voices
+                        label="Voice", 
+                        value="../voices/voice_1.wav" # Default voice
+                    ),
+                    
+                gr.Radio(["mp3", "wav"], label="Output file type", value="wav"), # Radio button for output file type
+                
+                gr.Dropdown(
+                        choices=get_folders_in_directory("../outputs"), # Get all of the available folders
+                        label="Outputs"
+                    ),
+                "text",
+            ],
+            outputs=["audio"], # Output box for audio file
+            allow_flagging="never",  # Disables the flagging functionality
+        )
         
