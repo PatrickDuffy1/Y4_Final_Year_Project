@@ -1,8 +1,8 @@
 # Generate response based on an initial input
-def generate_json_text(initial_prompt, model_settings, schema):
+def generate_json_text(initial_prompt, llm, schema):
     
     # Use LLM to generate text and get the result in the correct (JSON) format
-    response = model_settings["llm"].create_chat_completion(
+    response = llm._model.create_chat_completion(
         messages=[
             {
                 "role": "system",
@@ -14,8 +14,8 @@ def generate_json_text(initial_prompt, model_settings, schema):
             "type": "json_object",
             "schema": schema,
         },
-        temperature=model_settings["temperature"],
-        seed = model_settings["seed"]
+        temperature = llm._temperature,
+        seed = llm._seed
     )
     
     return response

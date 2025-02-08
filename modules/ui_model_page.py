@@ -1,39 +1,27 @@
 import gradio as gr
 from text_generator import generate_json_text
-from llm_model_loader import load_llm_model
 from utils import get_files_in_directory
+from llm import Llm
 
 llm = None
     
-
 # Load the LLM
 def load_model(local_model_path, huggingface_model_path, repo_id, context_length, gpu_layers, temperature, seed):
-    
-    if local_model_path:
-        model_path = local_model_path
-        repo_id = None
-    elif huggingface_model_path:
-        model_path = huggingface_model_path
-    else:
-        return "Invalid model path"
-    
-    model_settings = {
-        "file_name": model_path,
-        "repo_id": repo_id,
-        "n_gpu_layers": gpu_layers,
-        "n_ctx": context_length
-    }
-    
-    generation_settings = {
-        "temperature": temperature,
-        "seed": int(seed)
-    }
-    
+
     global llm
     
-    llm = load_llm_model(model_settings)
+    if huggingface_model_path != "":
+        model_path = huggingface_model_path
+    else:
+        model_path = local_model_path
     
-    return "Loaded model: " + str(model_settings)
+    if repo_id == "":
+        repo_id = None
+    
+    llm = Llm(model_path, repo_id, context_length, gpu_layers, temperature, int(seed))
+    llm.load_model()
+    
+    return "Loaded model: " + str(llm)
 
 
 model_page = gr.Interface(

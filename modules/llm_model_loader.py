@@ -1,43 +1,45 @@
 from llama_cpp import Llama
 
 # Load LLM model
-def load_llm_model(model_settings):
+def load_llm_model(llm):
     
-    llm = None
+    loaded_llm = None
     
     # If the model was manually downloaded, load it based on its file path
-    if model_settings["repo_id"] is None:
-        llm = load_model_from_file(model_settings)
+    if llm._repo_id is None:
+        loaded_llm = load_model_from_file(llm)
     
     # Load model from Hugging Face
     else:
-        llm = load_model_from_huggingface(model_settings)
+        loaded_llm = load_model_from_huggingface(llm)
     
-    return llm
+    return loaded_llm
     
 
 # Load a model from a file path
-def load_model_from_file(model_settings):
+def load_model_from_file(llm):
 
-    llm = Llama(
-        model_path = model_settings["file_name"], # Path to model
-        n_gpu_layers = model_settings["n_gpu_layers"],
-        n_ctx = model_settings["n_ctx"]
+    loaded_llm = Llama(
+        model_path = llm._model_path,
+        n_gpu_layers = llm._gpu_layers,
+        n_ctx = llm._context_length,
+        seed = llm.seed,
+        temperature = llm.temperature
     )
     
-    return llm
+    return loaded_llm
     
 
 # Load model from Hugging Face
-def load_model_from_huggingface(model_settings):
+def load_model_from_huggingface(llm):
 
-    from llama_cpp import Llama
-
-    llm = Llama.from_pretrained(
-        repo_id = model_settings["repo_id"],
-        filename = model_settings["file_name"],
-        n_gpu_layers = model_settings["n_gpu_layers"],
-        n_ctx = model_settings["n_ctx"]
+    loaded_llm = Llama.from_pretrained(
+        repo_id = llm._repo_id,
+        filename = llm._model_path,
+        n_gpu_layers = llm._gpu_layers,
+        n_ctx = llm._context_length,
+        seed = llm.seed,
+        temperature = llm.temperature
     )
     
-    return llm
+    return loaded_llm

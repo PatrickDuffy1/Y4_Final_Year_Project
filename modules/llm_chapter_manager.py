@@ -2,21 +2,15 @@ import json
 from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
 
-def identify_characters_in_chapter(chapter, llm_model):
+def identify_characters_in_chapter(chapter, llm):
     
     # Get the JSON schema from the file
     with open('../llm_json_schemas/character_identifier_schema.json', 'r') as file:
         schema = json.load(file)
     
-    model_settings = {
-        "llm": llm_model,
-        "temperature": 0.7,
-        "seed": -1 # Random seed
-    }
-    
     user_query = "Identify all characters (if any) who have a speaking role in the following text. Do not mention the same character more than once:\n\nTEXT:\n"
         
-    return generate_json_text(user_query + chapter, model_settings, schema)['choices'][0]['message']['content']
+    return generate_json_text(user_query + chapter, llm, schema)['choices'][0]['message']['content']
 
 
 
