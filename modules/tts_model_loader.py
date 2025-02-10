@@ -6,7 +6,7 @@ def load_tts_model(model_type):
     if model_type == "coqui":
         return load_coqui_model()
         
-    raise Exception("Invalid model type")
+    raise Exception("Invalid model type:", model_type)
     
 
 # Load TTS model
