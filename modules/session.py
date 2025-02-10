@@ -1,5 +1,6 @@
 from llm import Llm
 from llm_chapter_manager import identify_characters_in_chapter
+from audio_generator_manager import tts_generate_audio
 
 class Session:
     def __init__(self, llm=None):
@@ -24,3 +25,8 @@ class Session:
             return identify_characters_in_chapter(chapter, self._llm)
         
         return "Error"
+        
+    
+    def generate_audio(self, user_input, voice, output_folder, output_file_type):
+        
+        return tts_generate_audio(user_input, voice, output_folder, output_file_type)

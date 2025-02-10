@@ -6,30 +6,25 @@ from tts_audio_generator import generate_audio
 
 DEFAULT_OUTPUT_FILE_FOLDER = "../outputs"
 DEFAULT_AUDIO_FILE_EXTENSION = ".wav"
-    
- 
-def generate_audio_from_text(text, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type = "coqui"):
-    
-    # Load the tts model
-    tts = load_tts_model(tts_model_type)
-
-    # Set the output audio file name to the current timestamp
-    output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + ouput_file_type
-    
-    return generate_audio(text, voice, tts, output_file_path, tts_model_type)
 
 
-def generate_audio_from_file(file_path, voice, output_folder, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
-       
-    # Read the given file
-    text = read_file(file_path) 
+def tts_generate_audio(user_input, voice, output_folder, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
+    
+    if output_folder is not None:
+        # Read the given file
+        text = read_file(user_input)
+    else:
+        text = user_input
     
     # Load the tts model
     tts = load_tts_model(tts_model_type)
     
     # Check if there are multiple sections/chapters
     if isinstance(text, list) == False:
-        return generate_audio_from_text(text, voice, output_file_path)
+    
+        output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + ouput_file_type
+        
+        return generate_audio(text, voice, tts, output_file_path, tts_model_type)
     
     chapter_paths = []
     

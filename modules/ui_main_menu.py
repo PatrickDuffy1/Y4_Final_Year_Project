@@ -1,5 +1,4 @@
 import gradio as gr
-from audio_generator_manager import generate_audio_from_text, generate_audio_from_file
 from os import getcwd
 from utils import get_files_in_directory, get_folders_in_directory
 
@@ -26,13 +25,14 @@ class UiMainPage:
         
         # Use textbox as default. If there is no text in the textbox, use file, If there is neither, print message
         if input_text:
-            audio = generate_audio_from_text(input_text, voice, output_file_type)
+            user_input = input_text
+            output_folder = None
         elif input_file:
-            audio = generate_audio_from_file(input_file.name, voice, output_folder, output_file_type)
+            user_input = input_file.name
         else:
             return "Please provide either text or a file."
         
-        return audio
+        return self._session.generate_audio(user_input, voice, output_folder, output_file_type)
         
     
     def get_gradio_page(self):
