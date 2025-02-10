@@ -1,27 +1,13 @@
 from datetime import datetime
-import torch
 import re
 from TTS.api import TTS
 import os
 from file_reader import read_file
+from tts_model_loader import load_tts_model
 
 DEFAULT_OUTPUT_FILE_FOLDER = "../outputs"
 DEFAULT_AUDIO_FILE_EXTENSION = ".wav"
 MAX_LINE_LENGTH = 600
-
-
-# Load TTS model
-def load_model():
-    
-    # Use cuda if available, otherwise use the cpu
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    
-    print("Using device:", device)
-    
-    # Load TTS model
-    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-    
-    return tts
     
 
 def generate_audio(text, voice, tts, output_path):
@@ -40,10 +26,10 @@ def generate_audio(text, voice, tts, output_path):
     return output_path
     
  
-def generate_audio_from_text(text, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION):
+def generate_audio_from_text(text, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type = "coqui"):
     
     # Load the tts model
-    tts = load_model()
+    tts = load_tts_model(tts_model_type)
 
     # Set the output audio file name to the current timestamp
     output_file_path = DEFAULT_OUTPUT_FILE_FOLDER + "/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_") + ouput_file_type
@@ -51,7 +37,7 @@ def generate_audio_from_text(text, voice, ouput_file_type=DEFAULT_AUDIO_FILE_EXT
     return generate_audio(text, voice, tts, output_file_path)
 
 
-def generate_audio_from_file(file_path, voice, output_folder, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION):
+def generate_audio_from_file(file_path, voice, output_folder, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
        
     # Read the given file
     text = read_file(file_path) 
@@ -63,7 +49,7 @@ def generate_audio_from_file(file_path, voice, output_folder, ouput_file_type=DE
         return generate_audio_from_text(text, voice) 
     
     # Load the tts model
-    tts = load_model()
+    tts = load_tts_model(tts_model_type)
     
     chapter_paths = []
     

@@ -1,5 +1,5 @@
 import gradio as gr
-from audio_generator import generate_audio_from_text, generate_audio_from_file
+from audio_generator_manager import generate_audio_from_text, generate_audio_from_file
 from os import getcwd
 from utils import get_files_in_directory, get_folders_in_directory
 
