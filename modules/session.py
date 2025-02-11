@@ -1,5 +1,5 @@
 from llm import Llm
-from llm_chapter_manager import identify_characters_in_chapter
+from llm_chapter_manager import identify_characters_in_book
 from audio_generator_manager import tts_generate_audio
 
 class Session:
@@ -19,10 +19,10 @@ class Session:
         
         return self._llm
         
-    def indentify_chapter_characters(self, chapter):
+    def indentify_book_characters(self, user_input, is_file):
         
         if self._llm is not None:
-            return identify_characters_in_chapter(chapter, self._llm)
+            return identify_characters_in_book(user_input, self._llm, is_file)
         
         return "Error"
         
