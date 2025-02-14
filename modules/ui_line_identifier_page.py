@@ -1,11 +1,11 @@
 import gradio as gr
 
-class UiCharacterIdentifierPage:
+class UiLineIdentifierPage:
     def __init__(self, session):
         self._session = session
-        self.character_identifier_page = self.get_gradio_page()
+        self.line_identifier_page = self.get_gradio_page()
 
-    def indentify_book_characters(self, input_text, input_file):
+    def indentify_character_lines(self, input_text, input_file):
     
         if input_text:
             user_input = input_text
@@ -16,13 +16,13 @@ class UiCharacterIdentifierPage:
         else:
             return "Please provide either text or a file."
             
-        return self._session.indentify_book_characters(user_input, is_file)
+        #return self._session.indentify_character_lines(user_input, is_file)
 
     
     def get_gradio_page(self):
     
         return gr.Interface(
-            fn=self.indentify_book_characters,
+            fn=self.indentify_character_lines,
             inputs=[
                 "text",
                 "file"
