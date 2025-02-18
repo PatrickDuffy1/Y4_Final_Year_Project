@@ -16,7 +16,7 @@ class UiLineIdentifierPage:
         else:
             return "Please provide either text or a file."
             
-        #return self._session.indentify_character_lines(user_input, is_file)
+        return self._session.indentify_character_lines(user_input, is_file)
 
     
     def get_gradio_page(self):

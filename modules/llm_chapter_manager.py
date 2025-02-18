@@ -2,6 +2,7 @@ import json
 from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
 from file_reader import read_file
+from llm_line_identifier import identify_lines_in_chapter
 
 def identify_characters_in_book(user_input, llm, is_file):
 
@@ -35,7 +36,25 @@ def identify_characters_in_single_chapter(user_query, chapter, llm, schema):
     return generate_json_text(user_query + chapter, llm, schema)['choices'][0]['message']['content']
 
 
+def identify_lines_in_book(user_input, llm, is_file):
 
+    resulting_chapters = []
+
+    if is_file == False:
+        return identify_lines_in_chapter(user_input, llm)
+    else:
+        chapters = read_file(user_input)
+           
+    resulting_chapters.append(identify_lines_in_chapter(chapters[0], llm))
+    
+    for i in range(1, len(chapters)):
+    
+        resulting_chapters.append(identify_lines_in_chapter(chapters[i], llm))
+        print(resulting_chapters[i])
+        
+    return resulting_chapters
+    
+    
 
 # The following code is currently for testing purposes only
 
