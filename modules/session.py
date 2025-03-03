@@ -1,6 +1,8 @@
 from llm import Llm
-from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book
+from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book, identify_characters
 from audio_generator_manager import tts_generate_audio
+from utils import save_file_to_directory
+from datetime import datetime
 
 class Session:
     def __init__(self, llm=None):
@@ -31,7 +33,14 @@ class Session:
     def indentify_character_lines(self, user_input, is_file):
         
         if self._llm is not None:
-            return identify_lines_in_book(user_input, self._llm, is_file)
+            book_directory_path = "../processed_books/" + str(datetime.now()).replace(":", "_").replace(".", "_").replace(" ", "_")
+            
+            character_lines = identify_lines_in_book(user_input, self._llm, is_file)
+            save_file_to_directory(book_directory_path, "chapter_lines.json", character_lines)
+            
+            save_file_to_directory(book_directory_path, "book_characters.json", identify_characters(character_lines))
+            identify_characters(character_lines)
+            return character_lines
         
         return "Error"
         

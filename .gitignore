@@ -172,3 +172,6 @@ flagged/
 
 # Model files
 models/
+
+# Processed books files
+processed_books/

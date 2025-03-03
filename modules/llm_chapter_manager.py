@@ -24,8 +24,6 @@ def identify_characters_in_book(user_input, llm, is_file):
     previousChapters.append(identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", chapters[0], llm, schema))
     
     for i in range(1, len(chapters)):
-        #print("\n\nPrevious Chapters " + str(i) + ":\n" + str(previousChapters))
-        #temp_user_query = user_query + "\nPrevious characters (include the previous characters in your response):\n" + str(previousChapters) + "\n\nTEXT:\n"
         previousChapters.append(identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", chapters[i], llm, schema))
         print(previousChapters[i])
         
@@ -34,6 +32,26 @@ def identify_characters_in_book(user_input, llm, is_file):
 
 def identify_characters_in_single_chapter(user_query, chapter, llm, schema):
     return generate_json_text(user_query + chapter, llm, schema)['choices'][0]['message']['content']
+    
+    
+def identify_characters(input_data):
+    
+    # Convert all speaker names to lowercase to ensure case does not matter
+    speakers = [line["speaker"].lower() for line in input_data["lines"]]
+    
+    # Extract unique speakers from the data
+    unique_speakers = set(speakers)
+
+    # Create a list of dictionaries with each speaker and the voice attribute set to "unnasigned"
+    speakers_with_voice = [{"speaker": speaker.capitalize(), "voice": "unnasigned"} for speaker in unique_speakers]
+
+    # Find the "narrator" entry (if it exists) and move it to the first position
+    if any(speaker == "narrator" for speaker in speakers):
+        narrator = next(speaker for speaker in speakers_with_voice if speaker["speaker"].lower() == "narrator")
+        speakers_with_voice.remove(narrator)
+        speakers_with_voice.insert(0, narrator)
+
+    return speakers_with_voice
 
 
 def identify_lines_in_book(user_input, llm, is_file):
