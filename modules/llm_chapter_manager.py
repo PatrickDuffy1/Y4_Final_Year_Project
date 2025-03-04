@@ -73,6 +73,32 @@ def identify_lines_in_book(user_input, llm, is_file):
     return resulting_chapters
     
     
+def extract_lines_and_voices(file1, file2):
+
+    with open(file1, 'r') as f1, open(file2, 'r') as f2:
+        data1 = json.load(f1)
+        data2 = json.load(f2)
+
+    lines = []
+    voices = []
+
+    # Create a speaker-to-voice mapping from the second file
+    speaker_to_voice = {entry['speaker'].lower(): entry['voice'] for entry in data2}
+
+    # Extract lines and find corresponding voices
+    for entry in data1['lines']:
+        line = entry['line']
+        speaker = entry['speaker'].lower()
+
+        lines.append(line)
+
+        # Find the corresponding voice or use "unassigned" if not found
+        voice = speaker_to_voice.get(speaker, "unassigned")
+        voices.append(voice)
+
+    return lines, voices
+    
+    
 
 # The following code is currently for testing purposes only
 

@@ -1,8 +1,9 @@
 from llm import Llm
-from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book, identify_characters
+from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book, identify_characters, extract_lines_and_voices
 from audio_generator_manager import tts_generate_audio
 from utils import save_file_to_directory
 from datetime import datetime
+import os
 
 class Session:
     def __init__(self, llm=None):
@@ -45,6 +46,18 @@ class Session:
         return "Error"
         
     
-    def generate_audio(self, user_input, voice, output_folder, output_file_type):
+    def generate_audio(self, user_input, voice, output_folder, output_file_type=".wav"):
         
         return tts_generate_audio(user_input, voice, output_folder, output_file_type)
+        
+        
+    def generate_multi_speaker_audio(self, folder_path):
+        
+        folder_path = folder_path.replace("\\", "/")
+        lines, voices = extract_lines_and_voices(folder_path + "/chapter_lines.json", folder_path + "/book_characters.json")
+        temp_files_path = folder_path + "/temp_audio"
+        os.makedirs(temp_files_path, exist_ok=True)
+        
+        return self.generate_audio(lines, voices, temp_files_path + "/")
+    
+        

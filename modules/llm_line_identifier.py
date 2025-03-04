@@ -19,7 +19,7 @@ def identify_lines_in_chapter(chapter, llm):
     identified_chunks = []
 
     # Process each chunk with retry on JSON errors
-    for chunk in chunks:
+    for i, chunk in enumerate(chunks):
         for attempt in range(max_retries):
             try:
                 # Generate JSON text
@@ -42,6 +42,8 @@ def identify_lines_in_chapter(chapter, llm):
         else:
             print("Max retries reached for a chunk. Skipping it.")
             continue  # Skip this chunk if all retries fail
+            
+        print(i + 1, "of", len(chunks), "chunks completed")
 
     # Extract and combine lines directly using list comprehension
     combined_lines = [line for chunk in identified_chunks for line in chunk["lines"]]
@@ -115,5 +117,6 @@ def split_text_into_chunks(text, chunk_size):
             #file.write(chunk + "\n\n")
     
     #print(f"Successfully wrote {len(chunks)} chunks to '{file_path}'")
+    print(f"Successfully created {len(chunks)} chunks")
     
     return chunks

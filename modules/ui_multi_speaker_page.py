@@ -5,9 +5,9 @@ class UiMultiSpeakerPage:
         self._session = session
         self.multi_speaker_page = self.get_gradio_page()
 
-    def generate_multi_speaker_audio(self, book_folder):
+    def generate_multi_speaker_audio(self, book_folder_path):
             
-        return "Test" #self._session.generate_multi_speaker_audio(self, book_folder)
+        return self._session.generate_multi_speaker_audio(book_folder_path)
 
     
     def get_gradio_page(self):
@@ -15,8 +15,8 @@ class UiMultiSpeakerPage:
         return gr.Interface(
             fn=self.generate_multi_speaker_audio,
             inputs=[
-                "file"
+                "text"
             ],
-            outputs=["text"], # Output box for audio file
+            outputs=["audio"], # Output box for audio file
             allow_flagging="never",  # Disables the flagging functionality
         )
