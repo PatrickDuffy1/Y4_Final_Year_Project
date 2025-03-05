@@ -1,4 +1,6 @@
 import json
+import os
+from pydub import AudioSegment
 from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
 from file_reader import read_file
@@ -97,6 +99,27 @@ def extract_lines_and_voices(file1, file2):
         voices.append(voice)
 
     return lines, voices
+    
+
+def stitch_wav_files(folder_path):
+    # Get a list of .wav files and sort them numerically based on the number in the filename
+    audio_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.wav')], 
+                         key=lambda x: int(os.path.splitext(x)[0]))
+
+    combined_audio = AudioSegment.empty()
+
+    # Stitch the audio files in the correct order
+    for file_name in audio_files:
+        file_path = os.path.join(folder_path, file_name)
+        audio = AudioSegment.from_wav(file_path)
+        combined_audio += audio
+
+    # Export the combined audio as WAV
+    output_path = os.path.join(folder_path, "..", "combined_audio.wav")
+    combined_audio.export(output_path, format="wav")
+
+    print(f"Audio files have been stitched together successfully! Saved as: {output_path}")
+
     
     
 

@@ -1,5 +1,5 @@
 from llm import Llm
-from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book, identify_characters, extract_lines_and_voices
+from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book, identify_characters, extract_lines_and_voices, stitch_wav_files
 from audio_generator_manager import tts_generate_audio
 from utils import save_file_to_directory
 from datetime import datetime
@@ -57,7 +57,8 @@ class Session:
         lines, voices = extract_lines_and_voices(folder_path + "/chapter_lines.json", folder_path + "/book_characters.json")
         temp_files_path = folder_path + "/temp_audio"
         os.makedirs(temp_files_path, exist_ok=True)
+        self.generate_audio(lines, voices, temp_files_path + "/")
         
-        return self.generate_audio(lines, voices, temp_files_path + "/")
+        return stitch_wav_files(folder_path + "/temp_audio")
     
         

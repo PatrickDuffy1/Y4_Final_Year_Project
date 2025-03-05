@@ -57,6 +57,6 @@ def tts_generate_audio(user_input, voice, output_folder, ouput_file_type=DEFAULT
         chapter_paths.append(generate_audio(text[i], voice[i], tts, output_file_path, tts_model_type))
     
     # Return the audio file path of the first section of the text
-    return chapter_paths[0]
+    return chapter_paths
     
 
