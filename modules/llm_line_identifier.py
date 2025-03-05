@@ -18,16 +18,25 @@ def identify_lines_in_chapter(chapter, llm):
     chunks = split_text_into_chunks(chapter, 2000)
     identified_chunks = []
 
-    # Process each chunk with retry on JSON errors
+    # Process each chunk with retry on JSON errors or empty arrays
     for i, chunk in enumerate(chunks):
         for attempt in range(max_retries):
             try:
                 # Generate JSON text
                 response = generate_json_text(user_query + chunk, llm, schema)
                 content = response['choices'][0]['message']['content']
+                
+                print("Content:", content)
 
                 # Attempt to parse JSON
                 parsed_chunk = json.loads(content)
+
+                # Check if the 'lines' array is empty
+                if not parsed_chunk.get("lines"):
+                    print(f"Empty 'lines' array for chunk: {chunk[:100]}... (Attempt {attempt + 1}/{max_retries})")
+                    continue  # Retry if 'lines' is empty
+
+                # Add non-empty parsed chunk to identified_chunks
                 identified_chunks.append(parsed_chunk)
                 break  # Exit retry loop on success
 
@@ -42,7 +51,7 @@ def identify_lines_in_chapter(chapter, llm):
         else:
             print("Max retries reached for a chunk. Skipping it.")
             continue  # Skip this chunk if all retries fail
-            
+
         print(i + 1, "of", len(chunks), "chunks completed")
 
     # Extract and combine lines directly using list comprehension
