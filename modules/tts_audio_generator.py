@@ -21,8 +21,9 @@ def coqui_generate_audio(text, voice, tts, output_path):
     # Clean the text
     text = clean_text(text)
         
-    # Run TTS
-    tts.tts_to_file(text, speaker_wav=voice, language="en", file_path=output_path)
+    if len(text) > 0:
+        # Run TTS
+        tts.tts_to_file(text, speaker_wav=voice, language="en", file_path=output_path)
     
     # Return the path to the created audio file
     return output_path
@@ -49,6 +50,9 @@ def clean_text(text):
     text = re.sub(r'(?<![.,;:])\n(?=[A-Z])', place_holder, text)
     text = re.sub(r'(?<!\.)\n', ' ', text)
     text = re.sub(place_holder, '. ', text)
+    
+    text = text.replace(".", "\n")
+    text = text.replace('"', "\n")
     
     return text
     

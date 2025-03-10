@@ -54,7 +54,7 @@ def tts_generate_audio(user_input, voice, output_folder, ouput_file_type=DEFAULT
     # Call the generate_audio function for every section/chapter in the text
     for i in range(start_index, len(text)):
         output_file_path = output_folder_path + str(i) + ouput_file_type
-        chapter_paths.append(generate_audio(text[i], voice[i], tts, output_file_path, tts_model_type))
+        chapter_paths.append(generate_audio(text[i].encode('ascii', 'ignore').decode(), voice[i], tts, output_file_path, tts_model_type))
     
     # Return the audio file path of the first section of the text
     return chapter_paths

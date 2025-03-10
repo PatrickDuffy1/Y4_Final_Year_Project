@@ -12,7 +12,7 @@ def identify_lines_in_chapter(chapter, llm):
         
     user_query = "Identify all of the lines in the text that are spoken by a character, and the character who spoke the line.\nAlso include any lines by the narrator.\n. Do not skip any lines.\nDo not make up any line that does not exist.\nThe line should be the full line, not just part of it.\nIdentify the lines in order.\nEnsure that each line is exactly written exactly as it is in the text, including the punctuation.\nEnsure you include the narrator's lines as well.\nEnsure you do not misclassify character and narrator lines. For example the line '\"Hello!\" John said' should be have the 'Hello!' part labeled as a line by John, and the 'John said' part labled as a narrator line. This is important.\n DO NOT skip any lines. DO NOT skip a single word. Every word in the text should be in your final output\nDo not leave anything out. Do not skip a line. Ensure all characters and narrator lines are correctly assigned:\n\n"
 
-    max_retries = 3  # Maximum retries for each chunk
+    max_retries = 500  # Maximum retries for each chunk
 
     # Split text into chunks
     chunks = split_text_into_chunks(chapter, 2000)
