@@ -52,3 +52,7 @@ def save_file_to_directory(directory_path, file_name, content):
             json.dump(content, file, indent=4)
         else:
             file.write(content)
+            
+
+def count_files_in_directory(directory):
+    return len([f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))])

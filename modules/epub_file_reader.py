@@ -51,10 +51,10 @@ def read_epub_file(file_path):
         plain_text = "\n".join(line.strip() for line in plain_text.splitlines() if line.strip())
         
         # Remove unwanted newlines if the preceding character is not a period        
-        place_holder = "PLACE_HOLDER_STRING"
-        plain_text = re.sub(r'(?<![.,;:])\n(?=[A-Z])', place_holder, plain_text)
-        plain_text = re.sub(r'(?<!\.)\n', ' ', plain_text)
-        plain_text = re.sub(place_holder, '. ', plain_text)
+        #place_holder = "PLACE_HOLDER_STRING"
+        #plain_text = re.sub(r'(?<![.,;:])\n(?=[A-Z])', place_holder, plain_text)
+        #plain_text = re.sub(r'(?<!\.)\n', ' ', plain_text)
+        #plain_text = re.sub(place_holder, '. ', plain_text)
         
         chapters.append(plain_text)
         

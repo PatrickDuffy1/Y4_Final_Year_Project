@@ -16,6 +16,8 @@ class UiLineIdentifierPage:
         else:
             return "Please provide either text or a file."
             
+        print(user_input)
+            
         return self._session.indentify_character_lines(user_input, is_file)
 
     

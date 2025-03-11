@@ -9,7 +9,7 @@ def read_file(file_path):
         elif file_path[-4:] == ".txt":
             text = read_text_file(file_path)
         else:
-            raise Exception("Invalid file type")
+            raise Exception("Invalid file type for file", file_path)
     except:
         raise Exception("Error reading file")
         
