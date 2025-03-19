@@ -103,8 +103,7 @@ def extract_lines_and_voices(file1, file2):
 
 def stitch_wav_files(folder_path, index):
     # Get a list of .wav files and sort them numerically based on the number in the filename
-    audio_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.wav')], 
-                         key=lambda x: int(os.path.splitext(x)[0]))
+    audio_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.wav')], key=lambda x: int(os.path.splitext(x)[0]))
 
     combined_audio = AudioSegment.empty()
 
@@ -115,10 +114,10 @@ def stitch_wav_files(folder_path, index):
         combined_audio += audio
 
     # Export the combined audio as WAV
-    output_path = os.path.join(folder_path, "..", "chapter_" + index + "_combined_audio.wav")
+    output_path = os.path.join(folder_path, "..", "chapter_" + str(index) + "_combined_audio.wav")
     combined_audio.export(output_path, format="wav")
 
-    print(f"Audio files for chapter", i, "have been stitched together successfully! Saved as: {output_path}")
+    print(f"Audio files for chapter", str(index), "have been stitched together successfully! Saved as: ", output_path)
 
     
     

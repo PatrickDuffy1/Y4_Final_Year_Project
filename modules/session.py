@@ -64,7 +64,7 @@ class Session:
     def generate_multi_speaker_audio(self, folder_path):
         
         folder_path = folder_path.replace("\\", "/")
-        number_of_chapters = count_files_in_directory(folder_path)
+        number_of_chapters = count_files_in_directory(folder_path + "/chapter_lines")
         
         for i in range(0, number_of_chapters):
             lines, voices = extract_lines_and_voices(folder_path + "/chapter_lines/chapter_" + str(i) + "_lines.json", folder_path + "/book_characters/book_characters_chapter_" + str(i) + ".json")
