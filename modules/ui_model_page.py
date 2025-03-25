@@ -1,6 +1,7 @@
 import gradio as gr
 from text_generator import generate_json_text
 from utils import get_files_in_directory
+from llm_model_loader import Model_Type
 
 class UiModelPage:
     def __init__(self, session):
@@ -17,8 +18,11 @@ class UiModelPage:
         
         if repo_id == "":
             repo_id = None
+            model_type = Model_Type.LOCAL_FILE
+        else:
+            model_type = Model_Type.HUGGING_FACE
         
-        llm = self._session.set_and_load_llm(model_path, repo_id, context_length, gpu_layers, temperature, int(seed))
+        llm = self._session.set_and_load_llm(model_path, repo_id, context_length, gpu_layers, temperature, int(seed), model_type)
         
         return "Loaded model: " + str(llm)
 

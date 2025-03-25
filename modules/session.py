@@ -11,12 +11,23 @@ class Session:
         self._llm = llm
         
     
-    def set_and_load_llm(self, model_path, repo_id, context_length, gpu_layers, temperature, seed):
-        self._llm = Llm(model_path, repo_id, context_length, gpu_layers, temperature, seed)
+    def set_and_load_llm(self, model_path, repo_id, context_length, gpu_layers, temperature, seed, model_type):
+    
+        llm_config = {
+            'model_path': model_path,
+            'repo_id': repo_id,
+            'context_length': context_length,
+            'gpu_layers': gpu_layers,
+            'temperature': temperature,
+            'seed': seed,
+            'model_type': model_type
+        }
+        
+        self._llm = Llm(llm_config)
         self.load_llm()
         
         return self._llm
-        
+              
         
     def load_llm(self):
         self._llm.load_model()
@@ -51,7 +62,7 @@ class Session:
                 save_file_to_directory(book_directory_path + "/book_characters", "book_characters_chapter_" + str(i) + ".json", identify_characters(character_lines))
                 identify_characters(character_lines)
                 
-            return character_lines[0]
+            return character_lines
         
         return "No model loaded"
         
