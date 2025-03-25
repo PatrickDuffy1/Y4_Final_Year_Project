@@ -49,7 +49,8 @@ class Session:
                 save_file_to_directory(book_directory_path + "/chapter_lines", "chapter_" + str(i) + "_lines.json", character_lines)
                 
                 save_file_to_directory(book_directory_path + "/book_characters", "book_characters_chapter_" + str(i) + ".json", identify_characters(character_lines))
-                identify_characters(character_lines)
+                #identify_characters(character_lines)
+                merge_character_json_files(book_directory_path + "/book_characters")
                 
             return character_lines[0]
         
@@ -75,5 +76,11 @@ class Session:
             stitch_wav_files(folder_path + "/temp_audio_" + str(i), i)
             
         return "Audio generation complete"
+        
+        
+    def test_character_merger(self, folder_path):
+        folder_path = folder_path.replace("\\", "/")
+        merge_character_json_files(folder_path + "/book_characters")
+        
     
         
