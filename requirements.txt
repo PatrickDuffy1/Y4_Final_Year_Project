@@ -6,3 +6,4 @@ beautifulsoup4==4.12.3
 tts==0.22.0
 numpy==1.22.0
 MarkupSafe==2.1.1
+openai==1.68.2

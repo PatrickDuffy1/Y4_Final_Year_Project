@@ -1,4 +1,5 @@
 from llm_model_loader import Model_Type
+import openai
 
 # Generate response based on an initial input
 def generate_json_text(initial_prompt, llm, schema):
@@ -32,3 +33,29 @@ def generate_local_json_text(initial_prompt, llm, schema):
     )
     
     return response
+    
+    
+def generate_open_ai_json_text(initial_prompt, llm, schema):
+
+    openai.api_key = llm.model_config['api_key']
+    
+    response = openai.ChatCompletion.create(
+        model=llm.model_config['model_name'],
+        messages=[
+            {"role": "user", "content": initial_prompt}
+        ],
+        functions=[
+            {
+                "name": "generate_response",
+                "description": "Generate output following a specific JSON schema.",
+                "parameters": schema
+            }
+        ],
+        function_call={"name": "generate_response"},
+        temperature = llm.model_config['temperature'],
+        max_tokens = llm.model_config['max_tokens']
+    )
+
+    arguments_json = response["choices"][0]["message"]["function_call"]["arguments"]
+    
+    return arguments_json

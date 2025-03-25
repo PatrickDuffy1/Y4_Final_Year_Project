@@ -22,7 +22,7 @@ class UiModelPage:
         else:
             model_type = Model_Type.HUGGING_FACE
         
-        llm = self._session.set_and_load_llm(model_path, repo_id, context_length, gpu_layers, temperature, int(seed), model_type)
+        llm = self._session.set_and_load_llm(model_path, model_type, repo_id, context_length, gpu_layers, temperature, int(seed))
         
         return "Loaded model: " + str(llm)
 

@@ -11,7 +11,7 @@ class Session:
         self._llm = llm
         
     
-    def set_and_load_llm(self, model_path, repo_id, context_length, gpu_layers, temperature, seed, model_type):
+    def set_and_load_llm(self, model_path, model_type, repo_id=None, context_length=2048, gpu_layers=0, temperature=0.7, seed=0):
     
         llm_config = {
             'model_path': model_path,
@@ -25,6 +25,21 @@ class Session:
         
         self._llm = Llm(llm_config)
         self.load_llm()
+        
+        return self._llm
+        
+        
+    def set_cloud_llm(self, model_name, api_key, model_type, max_tokens=2048, temperature=0.7):
+    
+        llm_config = {
+            'model_name': model_name,
+            'api_key': api_key,
+            'max_tokens': max_tokens,
+            'temperature': temperature,
+            'model_type': model_type
+        }
+        
+        self._llm = Llm(llm_config)
         
         return self._llm
               

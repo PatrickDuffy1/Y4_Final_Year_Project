@@ -4,6 +4,7 @@ from llama_cpp import Llama
 class Model_Type(Enum):
     LOCAL_FILE = 1
     HUGGING_FACE = 2
+    OPEN_AI = 3
 
 # Load LLM model
 def load_llm_model(llm):
