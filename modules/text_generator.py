@@ -1,5 +1,7 @@
 from llm_model_loader import Model_Type
 import openai
+from google import genai
+from google.genai import types
 
 # Generate response based on an initial input
 def generate_json_text(initial_prompt, llm, schema):
@@ -59,3 +61,20 @@ def generate_open_ai_json_text(initial_prompt, llm, schema):
     arguments_json = response["choices"][0]["message"]["function_call"]["arguments"]
     
     return arguments_json
+    
+    
+def generate_gemini_json_text(initial_prompt, llm, schema):
+
+    client = genai.Client(api_key=llm.model_config['api_key'])
+
+    response = client.models.generate_content(
+        model = llm.model_config['model_name'],
+        contents = [initial_prompt],
+        config = types.GenerateContentConfig(
+            max_output_tokens = llm.model_config['max_tokens'],
+            temperature = llm.model_config['temperature'],
+            responseSchema = schema
+        )
+    )
+    
+    return response.text
