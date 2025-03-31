@@ -9,10 +9,9 @@ class UiMainPage:
     
 
     # Generate the audio using the chosen text/file, and the chosen voice
-    def gradio_generate_audio(self, input_text, input_file, voice, output_file_type, existing_ouput_folder, new_output_folder):
+    def gradio_generate_audio(self, input_text, input_file, voice, existing_ouput_folder, new_output_folder):
 
         output_folder = ""
-        output_file_type = "." + output_file_type
         
         if new_output_folder:
             output_folder = getcwd() + "../outputs/" + new_output_folder + "/"
@@ -32,7 +31,7 @@ class UiMainPage:
         else:
             return "Please provide either text or a file."
         
-        return self._session.generate_audio(user_input, voice, output_folder, output_file_type)
+        return self._session.generate_audio(user_input, voice, output_folder)
         
     
     def get_gradio_page(self):
@@ -45,13 +44,9 @@ class UiMainPage:
                 
                 # Dropdown menu for voices
                 gr.Dropdown(
-                        choices=set(["../voices/voice_1.wav"] + get_files_in_directory("../voices", [".txt"])), # Get all of the available voices
-                        label="Voice", 
-                        value="../voices/voice_1.wav" # Default voice
+                        choices=set(get_files_in_directory("../voices", [".txt"])), # Get all of the available voices
+                        label="Voice"
                     ),
-                    
-                gr.Radio(["mp3", "wav"], label="Output file type", value="wav"), # Radio button for output file type
-                
                 gr.Dropdown(
                         choices=get_folders_in_directory("../outputs"), # Get all of the available folders
                         label="Outputs"

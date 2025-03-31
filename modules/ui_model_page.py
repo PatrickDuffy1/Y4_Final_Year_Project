@@ -38,7 +38,7 @@ class UiModelPage:
                 "text", # Text box for repo ids
                 gr.Slider(0, 131072, value=2048, label="Context size", info="Context size of model. Suggested to leave at default"),
                 gr.Slider(0, 100, value=0, label="GPU layers to offload", info="Number of GPU layers to offload. Requires a compatible GPU"),
-                gr.Slider(0, 1, value=0.7, label="Temperature", info="Temperature of model. Higher values have more randomness"),
+                gr.Slider(0, 2, value=0.7, label="Temperature", info="Temperature of model. Higher values have more randomness"),
                 gr.Textbox("-1"), # Text box for seed
             ],
             outputs=["text"], # Output box for audio file
