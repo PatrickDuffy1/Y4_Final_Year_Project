@@ -8,9 +8,9 @@ DEFAULT_OUTPUT_FILE_FOLDER = "../outputs"
 DEFAULT_AUDIO_FILE_EXTENSION = ".wav"
 
 
-def tts_generate_audio(user_input, voice, output_folder, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
+def tts_generate_audio(user_input, voice, output_folder, is_file, ouput_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
     
-    if output_folder is not None and isinstance(user_input, list) == False:
+    if is_file:
         # Read the given file
         text = read_file(user_input)
     else:

@@ -6,7 +6,7 @@ from llm_model_loader import load_llm_model
 from file_reader import read_file
 from llm_line_identifier import identify_lines_in_chapter
 
-def identify_characters_in_book(user_input, llm, is_file):
+def identify_characters_in_book(user_input, llm):
 
     # Get the JSON schema from the file
     with open('../llm_json_schemas/character_identifier_schema.json', 'r') as file:
@@ -14,7 +14,7 @@ def identify_characters_in_book(user_input, llm, is_file):
 
     user_query = "Identify all characters (if any) who have a speaking role in the following text. Do not mention the same character more than once. Only identify the characters who have a speaking role in the chapter. Ignore any that do not:"
     
-    if is_file == False:
+    if isinstance(user_input, list)  == False:
         return identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", user_input, llm, schema) 
     else:
         chapters = read_file(user_input)

@@ -9,6 +9,7 @@ import os
 class Session:
     def __init__(self, llm=None):
         self._llm = llm
+        self.create_directories()
         
     
     def set_and_load_llm(self, model_path, model_type, repo_id=None, context_length=2048, gpu_layers=0, temperature=0.7, seed=0):
@@ -50,10 +51,10 @@ class Session:
         return self._llm
         
         
-    def indentify_book_characters(self, user_input, is_file):
+    def indentify_book_characters(self, user_input):
         
         if self._llm is not None:
-            return identify_characters_in_book(user_input, self._llm, is_file)
+            return identify_characters_in_book(user_input, self._llm)
         
         return "Error"
         
@@ -82,9 +83,9 @@ class Session:
         return "No model loaded"
         
     
-    def generate_audio(self, user_input, voice, output_folder, output_file_type=".wav"):
+    def generate_audio(self, user_input, voice, output_folder, is_file=True, output_file_type=".wav"):
         
-        return tts_generate_audio(user_input, voice, output_folder, output_file_type)
+        return tts_generate_audio(user_input, voice, output_folder, is_file, output_file_type)
         
         
     def generate_multi_speaker_audio(self, folder_path):
@@ -101,5 +102,16 @@ class Session:
             stitch_wav_files(folder_path + "/temp_audio_" + str(i), i)
             
         return "Audio generation complete"
+        
+        
+    def create_directories(self):
+   
+        # Get the parent directory of the script's location
+        parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        outputs_path = os.path.join(parent_dir, "outputs")
+
+        # Check if the outputs folder exists, and create it if not
+        if not os.path.exists(outputs_path):
+            os.makedirs(outputs_path)
     
         
