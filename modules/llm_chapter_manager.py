@@ -1,5 +1,6 @@
 import json
 import os
+import glob
 from pydub import AudioSegment
 from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
@@ -118,6 +119,42 @@ def stitch_wav_files(folder_path, index):
     combined_audio.export(output_path, format="wav")
 
     print(f"Audio files for chapter", str(index), "have been stitched together successfully! Saved as: ", output_path)
+    
+    
+def merge_character_json_files(folder_path, output_filename="merged_book_characters.json"):
+    merged_data = {}
+
+    files = glob.glob(os.path.join(folder_path, "book_characters_chapter_*.json"))
+
+    for file in files:
+        chapter_num = int(os.path.splitext(os.path.basename(file))[0].split("_")[-1])
+        
+        with open(file, 'r') as f:
+            data = json.load(f)
+            
+            for entry in data:
+                speaker = entry["speaker"]
+                
+                if speaker not in merged_data:
+                    merged_data[speaker] = {
+                        "speaker": speaker,
+                        "voice": entry.get("voice", "unassigned"),
+                        "chapters": [chapter_num]
+                    }
+                else:
+                    if chapter_num not in merged_data[speaker]["chapters"]:
+                        merged_data[speaker]["chapters"].append(chapter_num)
+
+    merged_list = list(merged_data.values())
+    merged_list.sort(key=lambda x: x["speaker"].lower())
+
+    output_dir = os.path.abspath(os.path.join(folder_path, os.pardir))
+    output_path = os.path.join(output_dir, output_filename)
+
+    with open(output_path, "w") as outfile:
+        json.dump(merged_list, outfile, indent=4)
+
+    print(f"Merged JSON created: {output_path}")
 
     
     
