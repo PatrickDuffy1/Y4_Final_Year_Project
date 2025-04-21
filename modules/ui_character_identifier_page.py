@@ -6,16 +6,17 @@ class UiCharacterIdentifierPage:
         self.character_identifier_page = self.get_gradio_page()
 
     def indentify_book_characters(self, input_text, input_file):
-        
-        
+    
         if input_text:
             user_input = input_text
+            is_file = False
         elif input_file:
             user_input = input_file.name
+            is_file = True
         else:
             return "Please provide either text or a file."
             
-        return self._session.indentify_book_characters(user_input)
+        return self._session.indentify_book_characters(user_input, is_file)
 
     
     def get_gradio_page(self):

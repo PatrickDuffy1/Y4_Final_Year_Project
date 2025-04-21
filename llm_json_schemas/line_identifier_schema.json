@@ -1,17 +1,19 @@
 {
-    "type": "object",
-    "properties": {
-        "lines": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-					"line": {"type": "string"},
-                    "speaker": {"type": "string"}
-                },
-                "required": ["line", "speaker"]
-            }
-        }
+  "type": "object",
+  "properties": {
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "line": { "type": "string" },
+          "speaker": { "type": "string" }
+        },
+        "required": ["line", "speaker"]
+      }
     },
-    "required": ["lines"]
+    "was_error": { "type": "boolean" },
+    "error_message": { "type": "string" }
+  },
+  "required": ["lines"]
 }
