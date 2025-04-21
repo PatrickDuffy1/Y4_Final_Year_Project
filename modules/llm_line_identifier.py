@@ -30,7 +30,7 @@ def identify_lines_in_chapter(chapter, llm):
                 response = generate_json_text(user_query + chunk, llm, schema)
                 content = response['choices'][0]['message']['content']
 
-                #print("\n\n\nCONTENT:\n", content, "\n\n\n")
+                print("\n\n\Output:\n", content, "\n\n\n")
 
                 # Attempt to parse JSON
                 parsed_chunk = json.loads(content)

@@ -1,5 +1,5 @@
 from llm import Llm
-from llm_chapter_manager import identify_characters_in_book, identify_lines_in_book, identify_characters, extract_lines_and_voices, stitch_wav_files, merge_character_json_files
+from llm_chapter_manager import identify_lines_in_book, identify_characters, extract_lines_and_voices, stitch_wav_files, merge_character_json_files
 from audio_generator_manager import tts_generate_audio
 from utils import save_file_to_directory, count_files_in_directory
 from datetime import datetime

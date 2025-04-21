@@ -6,35 +6,6 @@ from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
 from file_reader import read_file
 from llm_line_identifier import identify_lines_in_chapter
-
-def identify_characters_in_book(user_input, llm, is_file):
-
-    # Get the JSON schema from the file
-    with open('../llm_json_schemas/character_identifier_schema.json', 'r') as file:
-        schema = json.load(file)
-
-    user_query = "Identify all characters (if any) who have a speaking role in the following text. Do not mention the same character more than once. Only identify the characters who have a speaking role in the chapter. Ignore any that do not:"
-    
-    if is_file == False:
-        return identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", user_input, llm, schema) 
-    else:
-        chapters = read_file(user_input)
-    
-    if len(chapters) == 1:
-        return identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", chapters[0], llm, schema)
-        
-    previousChapters = []   
-    previousChapters.append(identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", chapters[0], llm, schema))
-    
-    for i in range(1, len(chapters)):
-        previousChapters.append(identify_characters_in_single_chapter(user_query + "\n\nTEXT:\n", chapters[i], llm, schema))
-        print(previousChapters[i])
-        
-    return previousChapters
-        
-
-def identify_characters_in_single_chapter(user_query, chapter, llm, schema):
-    return generate_json_text(user_query + chapter, llm, schema)['choices'][0]['message']['content']
     
     
 def identify_characters(input_data):
