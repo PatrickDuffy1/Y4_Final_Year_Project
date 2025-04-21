@@ -1,7 +1,13 @@
-from llm_model_loader import Model_Type
 import openai
 from google import genai
 from google.genai import types
+from enum import Enum
+
+class Model_Type(Enum):
+    LOCAL_FILE = 1
+    HUGGING_FACE = 2
+    OPEN_AI = 3
+    GEMINI = 4
 
 # Generate response based on an initial input
 def generate_json_text(initial_prompt, llm, schema):

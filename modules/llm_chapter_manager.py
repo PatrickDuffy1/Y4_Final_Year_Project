@@ -1,11 +1,56 @@
 import json
 import os
 import glob
-from pydub import AudioSegment
+from datetime import datetime
 from text_generator import generate_json_text
 from llm_model_loader import load_llm_model
 from file_reader import read_file
 from llm_line_identifier import identify_lines_in_chapter
+from utils import save_file_to_directory
+from pathlib import Path
+
+script_dir = Path(__file__).resolve().parent
+
+DEFAULT_OUTPUT_FILE_FOLDER = script_dir / ".." / "multi_speaker_outputs"
+
+def indentify_book_character_lines(llm, user_input, is_file, start_section, end_section, output_folder):
+    
+    if output_folder != "":
+        book_directory_path = output_folder
+        start_section = len(os.listdir(book_directory_path))
+        print("Some sections already complete\nContinuing from section", start_section)
+    else:
+        # Set the output audio folder name to the current timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
+        book_directory_path = DEFAULT_OUTPUT_FILE_FOLDER / timestamp
+        
+    if is_file:
+        # Read the given file
+        text = read_file(user_input)
+    else:
+        text = list()
+        text.append(user_input)
+        start_section = 0
+        end_section = len(text)
+        
+        
+    if end_section == -1:
+        end_section = len(text)
+        
+        
+    print(text)
+            
+    for i in range(start_section, end_section):
+        character_lines = identify_lines_in_book(text[i], llm, is_file)
+        save_file_to_directory(book_directory_path + "/chapter_lines", "chapter_" + str(i) + "_lines.json", character_lines)
+        
+        save_file_to_directory(book_directory_path + "/book_characters", "book_characters_chapter_" + str(i) + ".json", identify_characters(character_lines))
+        identify_characters(character_lines)
+        merge_character_json_files(book_directory_path + "/book_characters")
+    
+    print("\n\nLine identification complete")
+    
+    return character_lines
     
     
 def identify_characters(input_data):
@@ -45,51 +90,6 @@ def identify_lines_in_book(user_input, llm, is_file):
         print(resulting_chapters[i])
         
     return resulting_chapters
-    
-    
-def extract_lines_and_voices(file1, file2):
-
-    with open(file1, 'r') as f1, open(file2, 'r') as f2:
-        data1 = json.load(f1)
-        data2 = json.load(f2)
-
-    lines = []
-    voices = []
-
-    # Create a speaker-to-voice mapping from the second file
-    speaker_to_voice = {entry['speaker'].lower(): entry['voice'] for entry in data2}
-
-    # Extract lines and find corresponding voices
-    for entry in data1['lines']:
-        line = entry['line']
-        speaker = entry['speaker'].lower()
-
-        lines.append(line)
-
-        # Find the corresponding voice or use "unassigned" if not found
-        voice = speaker_to_voice.get(speaker, "unassigned")
-        voices.append(voice)
-
-    return lines, voices
-    
-
-def stitch_wav_files(folder_path, index):
-    # Get a list of .wav files and sort them numerically based on the number in the filename
-    audio_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.wav')], key=lambda x: int(os.path.splitext(x)[0]))
-
-    combined_audio = AudioSegment.empty()
-
-    # Stitch the audio files in the correct order
-    for file_name in audio_files:
-        file_path = os.path.join(folder_path, file_name)
-        audio = AudioSegment.from_wav(file_path)
-        combined_audio += audio
-
-    # Export the combined audio as WAV
-    output_path = os.path.join(folder_path, "..", "chapter_" + str(index) + "_combined_audio.wav")
-    combined_audio.export(output_path, format="wav")
-
-    print(f"Audio files for chapter", str(index), "have been stitched together successfully! Saved as: ", output_path)
     
     
 def merge_character_json_files(folder_path, output_filename="merged_book_characters.json"):

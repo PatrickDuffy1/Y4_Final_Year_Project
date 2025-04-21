@@ -2,6 +2,10 @@ import gradio as gr
 from text_generator import generate_json_text
 from utils import get_files_in_directory
 from llm_model_loader import Model_Type
+from pathlib import Path
+
+script_dir = Path(__file__).resolve().parent
+models_path = script_dir / ".." / "models"
 
 class UiModelPage:
     def __init__(self, session):
@@ -35,7 +39,7 @@ class UiModelPage:
                 
                 # Dropdown menu for models
                 gr.Dropdown(
-                        choices=set(get_files_in_directory("../models", [".txt"])), # Get all of the available models
+                        choices=set(get_files_in_directory(str(models_path), [".txt"])), # Get all of the available models
                         label="Model"
                     ),
                 "text", # Text box for model paths

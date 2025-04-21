@@ -12,13 +12,13 @@ def identify_lines_in_chapter(chapter, llm):
         
     user_query = "Identify all of the lines in the text that are spoken by a character, and the character who spoke the line.\nAlso include any lines by the narrator.\n. Do not skip any lines.\nDo not make up any line that does not exist.\nThe line should be the full line, not just part of it.\nIdentify the lines in order.\nEnsure that each line is exactly written exactly as it is in the text, including the punctuation.\nEnsure you include the narrator's lines as well.\nEnsure you do not misclassify character and narrator lines. For example the line '\"Hello!\" John said' should be have the 'Hello!' part labeled as a line by John, and the 'John said' part labled as a narrator line. This is important.\n DO NOT skip any lines. DO NOT skip a single word. Every word in the text should be in your final output\nDo not leave anything out. Do not skip a line. Ensure all characters and narrator lines are correctly assigned.\nIf you are unsure of the speaker of a line, label it as a Narrator line. Do not skip it. NEVER return an empty lines array. Ensure you include the non speaker (Narrator) lines in your output. Ensure that ALL Narrator lines are included:\n\n"
 
-    max_retries = 500  # Maximum retries for each chunk
+    max_retries = 200  # Maximum retries for each chunk
     retry_if_no_narrator = True
     max_retries_if_no_narrator = 5
     current_no_narrator_retries = 0
 
     # Split text into chunks
-    chunks = split_text_into_chunks(chapter, 2000)
+    chunks = split_text_into_chunks(chapter, int(llm.model_config['context_length']))
     identified_chunks = []
 
     # Process each chunk with retry on JSON errors or empty arrays

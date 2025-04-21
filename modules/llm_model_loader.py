@@ -1,11 +1,5 @@
-from enum import Enum
 from llama_cpp import Llama
-
-class Model_Type(Enum):
-    LOCAL_FILE = 1
-    HUGGING_FACE = 2
-    OPEN_AI = 3
-    GEMINI = 4
+from text_generator import Model_Type
 
 # Load LLM model
 def load_llm_model(llm):

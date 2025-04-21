@@ -1,6 +1,11 @@
 import gradio as gr
-from os import getcwd
+import os
 from utils import get_files_in_directory, get_folders_in_directory
+from pathlib import Path
+
+script_dir = Path(__file__).resolve().parent
+voices_path = script_dir / ".." / "voices"
+outputs_path = script_dir / ".." / "single_speaker_outputs"
 
 class UiMainPage:
     def __init__(self, session):
@@ -14,7 +19,10 @@ class UiMainPage:
         output_folder = ""
         
         if new_output_folder:
-            output_folder = getcwd() + "../outputs/" + new_output_folder + "/"
+            output_folder = os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "single_speaker_outputs", new_output_folder)
+            )
+
         elif existing_ouput_folder:
             output_folder = existing_ouput_folder  + "/"
             
@@ -44,11 +52,11 @@ class UiMainPage:
                 
                 # Dropdown menu for voices
                 gr.Dropdown(
-                        choices=set(get_files_in_directory("../voices", [".txt"])), # Get all of the available voices
+                        choices=set(get_files_in_directory(str(voices_path), [".txt"])), # Get all of the available voices
                         label="Voice"
                     ),
                 gr.Dropdown(
-                        choices=get_folders_in_directory("../outputs"), # Get all of the available folders
+                        choices=get_folders_in_directory(str(outputs_path)), # Get all of the available folders
                         label="Outputs"
                     ),
                 "text",

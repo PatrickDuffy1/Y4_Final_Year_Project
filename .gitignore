@@ -164,8 +164,8 @@ cython_debug/
 # Voice files
 voices/
 
-# Output files
-outputs/
+# Single speaker output files
+single_speaker_outputs/
 
 # Gradio Flagged Folder
 flagged/
@@ -173,5 +173,5 @@ flagged/
 # Model files
 models/
 
-# Processed books files
-processed_books/
+# Multi speaker outputs
+multi_speaker_outputs/

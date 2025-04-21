@@ -1,5 +1,9 @@
 import argparse
 from session import Session
+from pathlib import Path
+
+script_dir = Path(__file__).resolve().parent
+outputs_path = script_dir / ".." / "single_speaker_outputs"
 
 def main():
     parser = argparse.ArgumentParser(description="Process book text and generate audio using LLM.")
@@ -28,7 +32,6 @@ def main():
     # Audio generation
     parser.add_argument("--generate_audio_input", type=str, help="Text/file path for generating audio.")
     parser.add_argument("--generate_audio_voice", type=str, help="Voice for generating audio.")
-    parser.add_argument("--generate_audio_output_folder", type=str, default="../outputs", help="Output folder for generated audio.")
     parser.add_argument("--is_file", type=bool, default=True, help="Input type (text or file). Default is True.")
 
     # Multi-speaker audio
@@ -72,11 +75,11 @@ def main():
         print("Identified Character Lines:", result)
     
     # Generate audio (without needing LLM)
-    if args.generate_audio_input and args.generate_audio_voice and args.generate_audio_output_folder:
+    if args.generate_audio_input and args.generate_audio_voice:
         result = session.generate_audio(
             args.generate_audio_input,
             args.generate_audio_voice,
-            args.generate_audio_output_folder,
+            str(outputs_path),
             args.is_file,
             ".wav"  # Always ".wav" as output type
         )
