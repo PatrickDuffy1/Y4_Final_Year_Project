@@ -1,168 +1,159 @@
+# Import the TTS (Text-to-Speech) API from Coqui
 from TTS.api import TTS
 import re
 import os
 
+# Maximum allowed line length for audio generation
 MAX_LINE_LENGTH = 600
 
+
+# Main function to generate audio using the specified model type
 def generate_audio(text, voice, tts, output_path, model_type):
     
+    # Currently, only the 'coqui' model is supported
     if model_type == "coqui":
         return coqui_generate_audio(text, voice, tts, output_path)
         
-    raise Exception("Invalid model type:", model_type)
+    # Raise an error for unsupported model types
+    raise ValueError(f"Invalid model type: {model_type}")
     
     
+# Audio generation specifically for the Coqui TTS model
 def coqui_generate_audio(text, voice, tts, output_path):
 
-    # Limit the sentence length in the text if a max length has been set
+    # Shorten long sentences if a max line length is set
     if MAX_LINE_LENGTH > 0:
         text = limit_sentence_length(text, MAX_LINE_LENGTH)
         
-    # Clean the text
+    # Clean up unwanted or problematic characters in the text
     text = clean_text(text)
         
     if len(text) > 0:
-        # Run TTS
+        # Use Coqui TTS to generate audio from text
         tts.tts_to_file(text, speaker_wav=voice, language="en", file_path=output_path)
     
-    # Return the path to the created audio file
+    # Return the path where the audio file was saved
     return output_path
-    
-    
-# Clean unwanted characters from text
+
+
+# Function to clean text from special characters and formatting issues
 def clean_text(text):
     
-    # Replace certain special characters or edge cases with valid characters
+    # Replace various special and problematic characters with standard ones
     text = text.replace("—", "-").replace(". . .", "...")
     text = text.replace("”", '"').replace("“", '"').replace("’", "'").replace("''", "'").replace('""', '"')
     text = text.replace("Mr.", "Mr").replace("Mrs.", "Mrs").replace("Dr.", "Dr").replace("Co.", "Co")
     text = text.replace("!.", "!").replace("?.", "?").replace("'.", "'").replace("\".", "\"")
     text = text.replace(" .", "")
     
-    # Remove double periods '..' but keep '...' and '.'
+    # Replace double periods '..' with a single period, unless it's an ellipsis
     text = re.sub(r'(?<!\.)\.\.(?!\.)', '', text)
     
-    # Remove any characters that are not letters or certain special characters
+    # Remove characters that aren't alphanumeric or selected punctuation
     text = re.sub(r'[^a-zA-Z0-9\s,.\'"!?()\[\]:;&\n-]', '', text)
     
-    # Ensure every line ends with a full stop
+    # Add periods where a newline starts a new sentence without punctuation
     place_holder = "PLACE_HOLDER_STRING"
     text = re.sub(r'(?<![.,;:])\n(?=[A-Z])', place_holder, text)
     text = re.sub(r'(?<!\.)\n', ' ', text)
     text = re.sub(place_holder, '. ', text)
     
+    # Convert quatation marks and periods to new lines to reduce the TTS modules problems with splitting
     text = text.replace(".", "\n")
     text = text.replace('"', "\n")
     
     return text
-    
 
-# Split sentences that are over max_line_length characters in length
+
+# Function to break down text lines exceeding the maximum length
 def limit_sentence_length(text, max_line_length):
     
-    # Split text by new lines
+    # Break text into lines using newlines
     text = text.split("\n")
     
-    # Loop through all lines
     for i, line in enumerate(text):
+        print("\n\nLine:\n", line)
         
-        print("\n\nline:\n", line)
-        
-        # Limit the size of the words in the text
+        # Limit overly long words in the line
         line = limit_word_size(line)
         
-        # Check if the current line is greater than max_line_length
+        # If the line exceeds the maximum length, split and recursively process it
         if len(line) > max_line_length:
-            
-            # Split the line
             line = split_line(line)
-            
-            # Recursive call this function to limit the size of the split lines 
-            line = limit_sentence_length(line, max_line_length)
+            line = limit_sentence_length(line, max_line_length)  # Recursively shorten
         
-        # Add new lines back into the list of lines
+        # Reformat the lines and clean extra whitespace
         line = line + "\n"
         line = os.linesep.join([s for s in line.splitlines() if s])
         text[i] = line.replace("\n\n", "\n").lstrip(" ").rstrip(" ")
     
+    # Remove any empty lines
     filtered_text = [line for line in text if line]
     
-    # Convert the lines back into a single string and return it
+    # Reconstruct the processed lines into a single string
     return '\n'.join(filtered_text) + '\n' if filtered_text else ''
-    
 
-# Split a line
+
+# Function to split a line near the middle (by period if possible, space if not)
 def split_line(line):
     
-    # Find the halfway point of the line
+    # Determine halfway point of the line
     half_index = round(len(line) / 2)
     
-    # Half the line and create two strings
+    # Create two parts around the midpoint
     first_half_string = line[:half_index]
     second_half_string = line[half_index:]
     
-    # Find the closest full stop the the halfway point of the original line
+    # Look for the nearest full stop and space in each half
     first_full_stop_index = first_half_string.rfind(".")
     second_full_stop_index = second_half_string.find(".")
-    
-    # Find the closest space the the halfway point of the original line
     first_space_index = first_half_string.rfind(" ")
     second_space_index = second_half_string.find(" ")
     
-    # Find the closest full stop to the halfway point (if it exists), and split the line at that point.
-    # If a full stop is not in the line, split at the closest space to the halfway point.
-    # Otherwise, split line in half
+    # Choose the best splitting point based on proximity to midpoint
     if first_full_stop_index >= 0 and second_full_stop_index >= 0:
-        
         if (len(first_half_string) - first_full_stop_index) < second_full_stop_index:
             space_index = first_full_stop_index
-            
-        elif (len(first_half_string) - first_full_stop_index) >= second_full_stop_index:
+        else:
             space_index = second_full_stop_index + len(first_half_string)
                                 
     elif first_full_stop_index >= 0:
         space_index = first_full_stop_index
-        
     elif second_full_stop_index >= 0:
         space_index = second_full_stop_index + len(first_half_string)
-        
     elif (len(first_half_string) - first_space_index) < second_space_index:
         space_index = first_space_index
-        
     elif (len(first_half_string) - first_space_index) >= second_space_index:
         space_index = second_space_index + len(first_half_string)
-    
     else:
         space_index = half_index
     
-    # Insert a newline at the split point to split the lines
+    # Insert a newline at the chosen split point
     line = line[:space_index] + "\n" + line[space_index + 1:]
     
     return line
-    
 
-# Split words that are over max_line_length characters in length
+
+# Function to split very long words into smaller chunks
 def limit_word_size(line):
     
-    # Split the line into individual words
+    # Break line into individual words
     line = line.split()
     result = []
     
-    # Set the maximum word length
+    # Define maximum word length
     max_word_size = 19
     
-    # Loop through every word in the line
+    # Process each word
     for word in line:
-    
-        # Check if the current word is greater than max_word_size
         if len(word) > max_word_size:
-            # Split the long word into chunks of max_word_size characters
+            # Break long word into chunks
             chunks = [word[i:i + max_word_size] for i in range(0, len(word), max_word_size)]
-            result.append("\n".join(chunks))
+            result.append("\n".join(chunks))  # Add line breaks within long word
         else:
             result.append(word)
     
-    # Convert the words back into a single string
+    # Recombine words into a single line
     final_result = " ".join(result)
     
     return final_result

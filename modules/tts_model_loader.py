@@ -2,7 +2,8 @@ from TTS.api import TTS
 import torch
 
 def load_tts_model(model_type):
-
+    
+    # Currently, only the 'coqui' model is supported
     if model_type == "coqui":
         return load_coqui_model()
         

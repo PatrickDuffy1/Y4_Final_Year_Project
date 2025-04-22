@@ -2,6 +2,7 @@ import gradio as gr
 from pathlib import Path
 from utils import get_folders_in_directory
 
+# Location of multi-speaker outputs
 script_dir = Path(__file__).resolve().parent
 outputs_path = script_dir.parent / "multi_speaker_outputs"
 
@@ -16,7 +17,7 @@ class UiLineIdentifierPage:
         output_type, new_book_folder_path, existing_output_folder,
         max_retries
     ):
-        # Input Handling
+        # Handle user input source
         if input_type == "Text":
             if not input_text.strip():
                 return "Please enter some text."
@@ -36,13 +37,9 @@ class UiLineIdentifierPage:
         else:
             return "Invalid input type selected."
 
-        # Output Folder Handling
+        # Determine output folder
         if output_type == "New":
-            # Allow blank name for timestamp fallback
-            if new_book_folder_path != "":
-                book_folder_path = outputs_path / new_book_folder_path
-            else:
-                book_folder_path =  ""
+            book_folder_path = outputs_path / new_book_folder_path if new_book_folder_path else ""
         elif output_type == "Existing":
             if not existing_output_folder:
                 return "Please select an existing output folder."
@@ -53,11 +50,13 @@ class UiLineIdentifierPage:
         if book_folder_path != "":
             book_folder_path.mkdir(parents=True, exist_ok=True)
 
+        # Parse max retries
         try:
             retries = int(max_retries)
         except ValueError:
             return "Max retries must be an integer."
 
+        # Call session to process lines
         result = self._session.indentify_character_lines(
             user_input, is_file,
             str(book_folder_path) if book_folder_path else None,
@@ -74,27 +73,16 @@ class UiLineIdentifierPage:
         with gr.Blocks() as demo:
             gr.Markdown("## Multi-Speaker Line Identifier")
 
+            # Input method
             input_type = gr.Radio(["Text", "File"], value="Text", label="Select Input Type")
             input_text = gr.Textbox(label="Text Input", lines=4, visible=True)
             input_file = gr.File(label="Upload File", visible=False)
-
             start_section = gr.Textbox(value="0", label="Start Section", visible=False)
             end_section = gr.Textbox(value="-1", label="End Section (-1 for all)", visible=False)
 
-            # Start with only "New" if default input is "Text"
             output_type = gr.Radio(["New"], value="New", label="Select Output Folder Type")
-
-            new_output = gr.Textbox(
-                label="New Output Folder Name",
-                placeholder="Leave blank to auto-name using timestamp",
-                visible=True
-            )
-
-            existing_output = gr.Dropdown(
-                choices=folders,
-                label="Choose Existing Output Folder",
-                visible=False  # start hidden
-            )
+            new_output = gr.Textbox(label="New Output Folder Name", placeholder="Leave blank to auto-name using timestamp", visible=True)
+            existing_output = gr.Dropdown(choices=folders, label="Choose Existing Output Folder", visible=False)
 
             def on_input_type_change(choice):
                 is_file = choice == "File"
@@ -124,11 +112,7 @@ class UiLineIdentifierPage:
             max_retries = gr.Textbox(
                 value="5",
                 label="Max Retries If No Narrator",
-                info=(
-                    "Number of times to retry if there is no narrator in the output. "
-                    "May not want to be too high, as while no narrator in the output is usually a mistake, this is not always the case. "
-                    "Small chunk sizes have a higher chance of having no narrator that is not a mistake"
-                )
+                info="Retries if no narrator is detected — too many retries may misclassify valid chunks."
             )
 
             run_button = gr.Button("Identify Character Lines")

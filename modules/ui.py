@@ -8,11 +8,13 @@ class Ui:
     def __init__(self, session):
         self._session = session
         
+        # Initialize all UI page objects
         ui_single_speaker_page = UiSingleSpeakerPage(self._session)
         ui_model_page = UiModelPage(self._session)
         ui_line_identifier_page = UiLineIdentifierPage(self._session)
         ui_multi_speaker_page = UiMultiSpeakerPage(self._session)
         
+        # Wrap them into a tabbed interface
         main_ui = gr.TabbedInterface(
             [
                 ui_single_speaker_page.single_speaker_page,
