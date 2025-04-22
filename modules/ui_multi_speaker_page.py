@@ -10,14 +10,12 @@ class UiMultiSpeakerPage:
         self._session = session
         self.multi_speaker_page = self.get_gradio_page()
 
-    def generate_multi_speaker_audio(self, existing_ouput_folder, new_book_folder_path):
+    def generate_multi_speaker_audio(self, existing_ouput_folder, absolute_folder_path):
         
         book_folder_path = ""
         
         if new_book_folder_path:
-            book_folder_path = os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "multi_speaker_outputs", new_book_folder_path)
-            )
+            book_folder_path = absolute_folder_path + "/"
 
         elif existing_ouput_folder:
             book_folder_path = existing_ouput_folder  + "/"

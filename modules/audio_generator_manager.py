@@ -121,12 +121,14 @@ def extract_lines_and_voices(line_file, voice_file):
         voices.append(voice)
 
     return lines, voices
-
     
 
 def stitch_wav_files(folder_path, index, delete_originals=True):
     # Get a list of .wav files and sort them numerically based on the number in the filename
-    audio_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.wav')], key=lambda x: int(os.path.splitext(x)[0]))
+    audio_files = sorted(
+        [f for f in os.listdir(folder_path) if f.endswith('.wav')],
+        key=lambda x: int(os.path.splitext(x)[0])
+    )
 
     combined_audio = AudioSegment.empty()
 
@@ -136,11 +138,15 @@ def stitch_wav_files(folder_path, index, delete_originals=True):
         audio = AudioSegment.from_wav(file_path)
         combined_audio += audio
 
-    # Export the combined audio as WAV
-    output_path = os.path.join(folder_path, "..", f"chapter_{index}_combined_audio.wav")
+    # Ensure final_outputs directory exists
+    output_dir = os.path.join(folder_path, "..", "final_outputs")
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Save stitched audio as index.wav
+    output_path = os.path.join(output_dir, f"{index}.wav")
     combined_audio.export(output_path, format="wav")
 
-    print(f"Audio files for chapter {index} have been stitched together successfully! Saved as: {output_path}")
+    print(f"Audio files stitched successfully! Saved as: {output_path}")
 
     # Delete original files and folder if requested
     if delete_originals:

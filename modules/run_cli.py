@@ -28,7 +28,11 @@ def main():
 
     # Identify lines
     parser.add_argument("--identify_lines_user_input", type=str, help="User input for identifying lines.")
-
+    parser.add_argument("--start_section", type=int, default=0, help="Start section index for line identification.")
+    parser.add_argument("--end_section", type=int, default=-1, help="End section index for line identification.")
+    parser.add_argument("--output_folder", type=str, help="Optional folder to store character line outputs.")
+    parser.add_argument("--missing_narrator_max_retries", type=int, default=5, help="Max retries for missing narrator detection.")
+    
     # Audio generation
     parser.add_argument("--generate_audio_input", type=str, help="Text/file path for generating audio.")
     parser.add_argument("--generate_audio_voice", type=str, help="Voice for generating audio.")
@@ -71,7 +75,15 @@ def main():
     
     # Identify lines in book (if needed)
     if args.identify_lines_user_input:
-        result = session.indentify_character_lines(args.identify_lines_user_input, is_file=False)
+        output_folder = args.output_folder if args.output_folder else ""
+        result = session.indentify_character_lines(
+            user_input=args.identify_lines_user_input,
+            is_file=args.is_file,
+            output_folder=output_folder,
+            start_section=args.start_section,
+            end_section=args.end_section,
+            missing_narrator_max_retries=args.missing_narrator_max_retries
+        )
         print("Identified Character Lines:", result)
     
     # Generate audio (without needing LLM)
@@ -81,7 +93,7 @@ def main():
             args.generate_audio_voice,
             str(outputs_path),
             args.is_file,
-            ".wav"  # Always ".wav" as output type
+            ".wav"
         )
         print("Generated Audio:", result)
     
@@ -89,7 +101,6 @@ def main():
     if args.multi_speaker_audio_folder_path:
         result = session.generate_multi_speaker_audio(args.multi_speaker_audio_folder_path)
         print("Multi-Speaker Audio:", result)
-        
-        
+
 if __name__ == "__main__":
     main()

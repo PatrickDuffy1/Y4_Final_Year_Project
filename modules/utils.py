@@ -2,6 +2,7 @@ from os import listdir
 from os.path import isfile, join
 import os
 import json
+from pathlib import Path
 
 # Returns a list of all the file paths in the given folder
 def get_files_in_directory(directory_path, files_to_ignore):
@@ -37,17 +38,13 @@ def get_folders_in_directory(directory_path):
     
     
 def save_file_to_directory(directory_path, file_name, content):
+    directory_path = Path(directory_path)  # Ensure it's a Path object
+    directory_path.mkdir(parents=True, exist_ok=True)  # Create dirs if needed
 
-    os.makedirs(directory_path, exist_ok=True)
-    
-    if directory_path[-1] != "/":
-        directory_path += "/"
-    
-    output_file = directory_path + file_name
-    file_name, file_extension = os.path.splitext(file_name)
-    
-    with open(output_file, 'w') as file:
-        
+    output_file = directory_path / file_name
+    file_extension = output_file.suffix
+
+    with open(output_file, 'w', encoding='utf-8') as file:
         if file_extension == ".json":
             json.dump(content, file, indent=4)
         else:

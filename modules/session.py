@@ -46,10 +46,10 @@ class Session:
         return self._llm
         
         
-    def indentify_character_lines(self, user_input, is_file, start_section=0, end_section=-1, output_folder=""):
+    def indentify_character_lines(self, user_input, is_file, output_folder="", start_section=0, end_section=-1, missing_narrator_max_retries=5):
             
         if self._llm is not None:           
-            return indentify_book_character_lines(self._llm, user_input, is_file, start_section, end_section, output_folder)
+            return indentify_book_character_lines(self._llm, user_input, is_file, start_section, end_section, output_folder, missing_narrator_max_retries)
         
         return "No model loaded"
         

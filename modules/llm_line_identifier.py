@@ -3,7 +3,7 @@ import re
 import os
 from text_generator import generate_json_text
 
-def identify_lines_in_chapter(chapter, llm):
+def identify_lines_in_chapter(chapter, llm, max_retries_if_no_narrator):
     print("Start")
     
     # Get the JSON schema from the file
@@ -14,7 +14,6 @@ def identify_lines_in_chapter(chapter, llm):
 
     max_retries = 200  # Maximum retries for each chunk
     retry_if_no_narrator = True
-    max_retries_if_no_narrator = 5
     current_no_narrator_retries = 0
 
     # Split text into chunks

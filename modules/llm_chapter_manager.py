@@ -13,16 +13,20 @@ script_dir = Path(__file__).resolve().parent
 
 DEFAULT_OUTPUT_FILE_FOLDER = script_dir / ".." / "multi_speaker_outputs"
 
-def indentify_book_character_lines(llm, user_input, is_file, start_section, end_section, output_folder):
+def indentify_book_character_lines(llm, user_input, is_file, start_section, end_section, output_folder, max_retries_if_no_narrator):
     
-    if output_folder != "":
-        book_directory_path = output_folder
-        start_section = len(os.listdir(book_directory_path))
-        print("Some sections already complete\nContinuing from section", start_section)
-    else:
+    if output_folder == "":
         # Set the output audio folder name to the current timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
         book_directory_path = DEFAULT_OUTPUT_FILE_FOLDER / timestamp
+    elif not os.path.exists(output_folder):
+        # If the specified output folder does not exist, use it as the book_directory_path
+        book_directory_path = Path(output_folder)
+    else:
+        # If the folder exists, continue from the last completed section
+        book_directory_path = Path(output_folder)
+        start_section = len(os.listdir(book_directory_path))
+        print("Some sections already complete\nContinuing from section", start_section)
         
     if is_file:
         # Read the given file
@@ -41,16 +45,24 @@ def indentify_book_character_lines(llm, user_input, is_file, start_section, end_
     print(text)
             
     for i in range(start_section, end_section):
-        character_lines = identify_lines_in_book(text[i], llm, is_file)
-        save_file_to_directory(book_directory_path + "/chapter_lines", "chapter_" + str(i) + "_lines.json", character_lines)
+        character_lines = identify_lines_in_book(text[i], llm, is_file, max_retries_if_no_narrator)
         
-        save_file_to_directory(book_directory_path + "/book_characters", "book_characters_chapter_" + str(i) + ".json", identify_characters(character_lines))
-        identify_characters(character_lines)
-        merge_character_json_files(book_directory_path + "/book_characters")
+        chapter_dir = Path(book_directory_path) / "chapter_lines"
+        filename = f"chapter_{i}_lines.json"
+
+        save_file_to_directory(chapter_dir, filename, character_lines)
+        
+        chapter_dir = Path(book_directory_path) / "book_characters"
+        filename = f"book_characters_chapter_{i}.json"
+
+        save_file_to_directory(chapter_dir, filename, identify_characters(character_lines))
+
+        #identify_characters(character_lines)
+        merge_character_json_files(book_directory_path / "book_characters")
     
     print("\n\nLine identification complete")
     
-    return character_lines
+    return book_directory_path
     
     
 def identify_characters(input_data):
@@ -73,20 +85,20 @@ def identify_characters(input_data):
     return speakers_with_voice
 
 
-def identify_lines_in_book(user_input, llm, is_file):
+def identify_lines_in_book(user_input, llm, is_file, max_retries_if_no_narrator):
 
     resulting_chapters = []
 
     #if is_file == False:
-    return identify_lines_in_chapter(user_input, llm)
+    return identify_lines_in_chapter(user_input, llm, max_retries_if_no_narrator)
     #else:
      #   chapters = read_file(user_input)
            
-    resulting_chapters.append(identify_lines_in_chapter(chapters[0], llm))
+    resulting_chapters.append(identify_lines_in_chapter(chapters[0], llm, max_retries_if_no_narrator))
     
     for i in range(1, len(chapters)):
     
-        resulting_chapters.append(identify_lines_in_chapter(chapters[i], llm))
+        resulting_chapters.append(identify_lines_in_chapter(chapters[i], llm, max_retries_if_no_narrator))
         print(resulting_chapters[i])
         
     return resulting_chapters
