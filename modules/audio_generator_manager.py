@@ -77,10 +77,7 @@ def tts_generate_multi_speaker_audio(folder_path):
     
     for i in range(0, number_of_chapters):
         
-        if number_of_chapters > 1:
-            lines, voices = extract_lines_and_voices(folder_path + "/chapter_lines/chapter_" + str(i) + "_lines.json", folder_path + "merged_book_characters.json")
-        else:
-            lines, voices = extract_lines_and_voices(folder_path + "/chapter_lines/chapter_" + str(i) + "_lines.json", folder_path + "/book_characters/book_characters_chapter_" + str(i) + ".json")
+        lines, voices = extract_lines_and_voices(folder_path + "/chapter_lines/chapter_" + str(i) + "_lines.json", folder_path + "/merged_book_characters.json")
         
         temp_files_path = folder_path + "/temp_audio_" + str(i)
         os.makedirs(temp_files_path, exist_ok=True)

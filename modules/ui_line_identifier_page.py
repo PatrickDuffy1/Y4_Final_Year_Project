@@ -1,61 +1,148 @@
 import gradio as gr
-import os
 from pathlib import Path
-from utils import get_files_in_directory, get_folders_in_directory
+from utils import get_folders_in_directory
 
 script_dir = Path(__file__).resolve().parent
-outputs_path = script_dir / ".." / "multi_speaker_outputs"
+outputs_path = script_dir.parent / "multi_speaker_outputs"
 
 class UiLineIdentifierPage:
     def __init__(self, session):
         self._session = session
         self.line_identifier_page = self.get_gradio_page()
 
-    def indentify_character_lines(self, input_text, input_file, start_section, end_section, existing_ouput_folder, new_book_folder_path):
-        
-        book_folder_path = ""
-        
-        if new_book_folder_path:
-            book_folder_path = os.path.abspath(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "multi_speaker_outputs", new_book_folder_path)
-            )
-
-        elif existing_ouput_folder:
-            book_folder_path = existing_ouput_folder  + "/"
-            
-        book_folder_path = book_folder_path.replace("\\", "/")
-            
-        print("folder: " + book_folder_path)
-    
-        if input_text:
+    def indentify_character_lines(
+        self, input_type, input_text, input_file,
+        start_section, end_section,
+        output_type, new_book_folder_path, existing_output_folder,
+        max_retries
+    ):
+        # Input Handling
+        if input_type == "Text":
+            if not input_text.strip():
+                return "Please enter some text."
             user_input = input_text
             is_file = False
-        elif input_file:
+            start = end = None
+        elif input_type == "File":
+            if not input_file:
+                return "Please upload a file."
             user_input = input_file.name
             is_file = True
+            try:
+                start = int(start_section)
+                end = int(end_section)
+            except ValueError:
+                return "Start and End Section must be integers."
         else:
-            return "Please provide either text or a file."
-            
-        print(user_input)
-            
-        return self._session.indentify_character_lines(user_input, is_file, book_folder_path, int(start_section), int(end_section))
+            return "Invalid input type selected."
 
-    
-    def get_gradio_page(self):
-    
-        return gr.Interface(
-            fn=self.indentify_character_lines,
-            inputs=[
-                "text",
-                "file",
-                gr.Textbox("0"),
-                gr.Textbox("-1"),
-                gr.Dropdown(
-                        choices=get_folders_in_directory(str(outputs_path)), # Get all of the available folders
-                        label="Outputs"
-                    ),
-                "text",
-            ],
-            outputs=["text"], # Output box for audio file
-            allow_flagging="never",  # Disables the flagging functionality
+        # Output Folder Handling
+        if output_type == "New":
+            # Allow blank name for timestamp fallback
+            if new_book_folder_path != "":
+                book_folder_path = outputs_path / new_book_folder_path
+            else:
+                book_folder_path =  ""
+        elif output_type == "Existing":
+            if not existing_output_folder:
+                return "Please select an existing output folder."
+            book_folder_path = Path(existing_output_folder)
+        else:
+            return "Invalid output folder selection."
+
+        if book_folder_path != "":
+            book_folder_path.mkdir(parents=True, exist_ok=True)
+
+        try:
+            retries = int(max_retries)
+        except ValueError:
+            return "Max retries must be an integer."
+
+        result = self._session.indentify_character_lines(
+            user_input, is_file,
+            str(book_folder_path) if book_folder_path else None,
+            start if is_file else 0,
+            end if is_file else -1,
+            retries
         )
+
+        return f"Lines identified and saved in: {book_folder_path or 'timestamped folder (auto-named)'}\n\n{result}"
+
+    def get_gradio_page(self):
+        folders = get_folders_in_directory(str(outputs_path))
+
+        with gr.Blocks() as demo:
+            gr.Markdown("## Multi-Speaker Line Identifier")
+
+            input_type = gr.Radio(["Text", "File"], value="Text", label="Select Input Type")
+            input_text = gr.Textbox(label="Text Input", lines=4, visible=True)
+            input_file = gr.File(label="Upload File", visible=False)
+
+            start_section = gr.Textbox(value="0", label="Start Section", visible=False)
+            end_section = gr.Textbox(value="-1", label="End Section (-1 for all)", visible=False)
+
+            # Start with only "New" if default input is "Text"
+            output_type = gr.Radio(["New"], value="New", label="Select Output Folder Type")
+
+            new_output = gr.Textbox(
+                label="New Output Folder Name",
+                placeholder="Leave blank to auto-name using timestamp",
+                visible=True
+            )
+
+            existing_output = gr.Dropdown(
+                choices=folders,
+                label="Choose Existing Output Folder",
+                visible=False  # start hidden
+            )
+
+            def on_input_type_change(choice):
+                is_file = choice == "File"
+                return (
+                    gr.update(visible=choice == "Text"),
+                    gr.update(visible=choice == "File"),
+                    gr.update(visible=choice == "File"),
+                    gr.update(visible=choice == "File"),
+                    gr.update(choices=["New", "Existing"] if is_file else ["New"], value="New")
+                )
+
+            input_type.change(
+                on_input_type_change,
+                inputs=input_type,
+                outputs=[input_text, input_file, start_section, end_section, output_type]
+            )
+
+            output_type.change(
+                lambda choice: (
+                    gr.update(visible=choice == "New"),
+                    gr.update(visible=choice == "Existing")
+                ),
+                inputs=output_type,
+                outputs=[new_output, existing_output]
+            )
+
+            max_retries = gr.Textbox(
+                value="5",
+                label="Max Retries If No Narrator",
+                info=(
+                    "Number of times to retry if there is no narrator in the output. "
+                    "May not want to be too high, as while no narrator in the output is usually a mistake, this is not always the case. "
+                    "Small chunk sizes have a higher chance of having no narrator that is not a mistake"
+                )
+            )
+
+            run_button = gr.Button("Identify Character Lines")
+            result_text = gr.Textbox(label="Status")
+
+            run_button.click(
+                self.indentify_character_lines,
+                inputs=[
+                    input_type, input_text, input_file,
+                    start_section, end_section,
+                    output_type, new_output, existing_output,
+                    max_retries
+                ],
+                outputs=[result_text]
+            )
+
+        return demo

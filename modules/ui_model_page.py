@@ -1,54 +1,84 @@
 import gradio as gr
-from text_generator import generate_json_text
+from pathlib import Path
 from utils import get_files_in_directory
 from llm_model_loader import Model_Type
-from pathlib import Path
 
 script_dir = Path(__file__).resolve().parent
-models_path = script_dir / ".." / "models"
+models_path = script_dir.parent / "models"
 
 class UiModelPage:
     def __init__(self, session):
         self._session = session
         self.model_page = self.get_gradio_page()
-        
-    # Load the LLM
-    def load_model(self, local_model_path, huggingface_model_path, repo_id, context_length, gpu_layers, temperature, seed):
-        
-        if huggingface_model_path != "":
-            model_path = huggingface_model_path
-        else:
-            model_path = local_model_path
-        
-        if repo_id == "":
-            repo_id = None
-            model_type = Model_Type.LOCAL_FILE
-        else:
-            model_type = Model_Type.HUGGING_FACE
-        
-        llm = self._session.set_and_load_llm(model_path, model_type, repo_id, context_length, gpu_layers, temperature, int(seed))
-        
-        return "Loaded model: " + str(llm)
 
-    
-    def get_gradio_page(self):
-    
-        return gr.Interface(
-            fn=self.load_model,
-            inputs=[
-                
-                # Dropdown menu for models
-                gr.Dropdown(
-                        choices=set(get_files_in_directory(str(models_path), [".txt"])), # Get all of the available models
-                        label="Model"
-                    ),
-                "text", # Text box for model paths
-                "text", # Text box for repo ids
-                gr.Slider(0, 131072, value=4096, label="Context size", info="Context size of model. Suggested to leave at default"),
-                gr.Slider(0, 100, value=0, label="GPU layers to offload", info="Number of GPU layers to offload. Requires a compatible GPU"),
-                gr.Slider(0, 2, value=0.7, label="Temperature", info="Temperature of model. Higher values have more randomness"),
-                gr.Textbox("-1"), # Text box for seed
-            ],
-            outputs=["text"], # Output box for audio file
-            allow_flagging="never",  # Disables the flagging functionality
+    def load_model(self, model_source, model_dropdown, model_path_str, repo_id, context_length, gpu_layers, temperature, seed):
+        model_path = None
+        model_type = None
+
+        if model_source == "Choose from models folder":
+            model_path = model_dropdown
+            model_type = Model_Type.LOCAL_FILE
+            repo_id = None
+        elif model_source == "Enter local model path":
+            model_path = model_path_str
+            model_type = Model_Type.LOCAL_FILE
+            repo_id = None
+        elif model_source == "Use HuggingFace repo":
+            model_path = model_path_str
+            model_type = Model_Type.HUGGING_FACE
+            if not repo_id:
+                return "Error: HuggingFace repo ID is required.",
+
+        # Handle empty seed safely
+        try:
+            seed = int(seed)
+        except ValueError:
+            seed = -1
+
+        llm = self._session.set_and_load_llm(
+            model_path, model_type, repo_id, context_length, gpu_layers, temperature, seed
         )
+
+        return f"Loaded model: {llm}"
+
+    def get_gradio_page(self):
+        available_models = get_files_in_directory(str(models_path), [".txt"])
+
+        with gr.Blocks() as demo:
+            gr.Markdown("## Load Language Model")
+
+            model_source = gr.Radio(
+                choices=["Choose from models folder", "Enter local model path", "Use HuggingFace repo"],
+                value="Choose from models folder",
+                label="Select model source"
+            )
+
+            model_dropdown = gr.Dropdown(choices=available_models, label="Select model file", visible=True)
+            model_path_str = gr.Textbox(label="Model path (local or HuggingFace)", visible=False)
+            repo_id = gr.Textbox(label="HuggingFace Repo ID (required for HF models)", visible=False)
+
+            def toggle_model_fields(choice):
+                return (
+                    gr.update(visible=choice == "Choose from models folder"),
+                    gr.update(visible=choice in ["Enter local model path", "Use HuggingFace repo"]),
+                    gr.update(visible=choice == "Use HuggingFace repo")
+                )
+
+            model_source.change(toggle_model_fields, inputs=model_source, outputs=[model_dropdown, model_path_str, repo_id])
+
+            # Common model parameters
+            context_length = gr.Slider(0, 131072, value=4096, step=1, label="Context size")
+            gpu_layers = gr.Slider(0, 100, value=0, label="GPU layers to offload")
+            temperature = gr.Slider(0, 2, value=0.7, label="Temperature")
+            seed = gr.Textbox(value="-1", label="Seed")
+
+            load_button = gr.Button("Load Model")
+            result = gr.Textbox(label="Status")
+
+            load_button.click(
+                self.load_model,
+                inputs=[model_source, model_dropdown, model_path_str, repo_id, context_length, gpu_layers, temperature, seed],
+                outputs=[result]
+            )
+
+        return demo
