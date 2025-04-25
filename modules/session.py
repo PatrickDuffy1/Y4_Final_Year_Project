@@ -1,3 +1,4 @@
+import os
 from llm import Llm
 from llm_chapter_manager import identify_book_character_lines  # Function to process and identify character lines in text
 from audio_generator_manager import tts_generate_audio, tts_generate_multi_speaker_audio  # Functions to generate audio from text
@@ -7,6 +8,7 @@ class Session:
     def __init__(self, llm=None):
         # Initialize with an optional LLM instance
         self._llm = llm
+        self.create_output_folders()
 
     def set_and_load_llm(self, model_path, model_type, repo_id=None, context_length=2048, gpu_layers=0, temperature=0.7, seed=0):
         """
@@ -81,7 +83,7 @@ class Session:
         return tts_generate_multi_speaker_audio(folder_path)
         
         
-    def create_output_folders():
+    def create_output_folders(self):
         """
         Create output folders if they have not already been created.
         """
@@ -90,5 +92,3 @@ class Session:
             if not os.path.exists(folder):
                 os.makedirs(folder)
                 print(f"Created folder: {folder}")
-            else:
-                print(f"Folder already exists: {folder}")
