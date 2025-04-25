@@ -38,6 +38,10 @@ def identify_lines_in_chapter(chapter, llm, max_retries_if_no_narrator):
         current_no_narrator_retries = 0  # Reset retry count for each chunk
         for attempt in range(max_retries):
             try:
+                print("\nCurrent chunk:", (i + 1), "of", len(chunk), "\nChunk text:\n")
+                print(chunk)
+                print("\nProcessing...")
+                
                 # Ask the LLM to process this chunk
                 response = generate_json_text(user_query + chunk, llm, schema)
                 content = response['choices'][0]['message']['content']

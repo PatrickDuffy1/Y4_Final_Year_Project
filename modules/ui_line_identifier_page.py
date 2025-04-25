@@ -39,7 +39,10 @@ class UiLineIdentifierPage:
 
         # Determine output folder
         if output_type == "New":
-            book_folder_path = outputs_path / new_book_folder_path if new_book_folder_path else ""
+            if new_book_folder_path != "":
+                book_folder_path = outputs_path / new_book_folder_path
+            else:
+                book_folder_path = ""
         elif output_type == "Existing":
             if not existing_output_folder:
                 return "Please select an existing output folder."
@@ -59,13 +62,17 @@ class UiLineIdentifierPage:
         # Call session to process lines
         result = self._session.indentify_character_lines(
             user_input, is_file,
-            str(book_folder_path) if book_folder_path else None,
+            str(book_folder_path),
             start if is_file else 0,
             end if is_file else -1,
             retries
         )
 
         return f"Lines identified and saved in: {book_folder_path or 'timestamped folder (auto-named)'}\n\n{result}"
+
+    def refresh_folder_choices(self):
+        updated_folders = get_folders_in_directory(str(outputs_path))
+        return gr.update(choices=updated_folders)
 
     def get_gradio_page(self):
         folders = get_folders_in_directory(str(outputs_path))
@@ -84,6 +91,9 @@ class UiLineIdentifierPage:
             new_output = gr.Textbox(label="New Output Folder Name", placeholder="Leave blank to auto-name using timestamp", visible=True)
             existing_output = gr.Dropdown(choices=folders, label="Choose Existing Output Folder", visible=False)
 
+            # Refresh button for folder list
+            refresh_button = gr.Button("🔄 Refresh Folder List", visible=False)
+
             def on_input_type_change(choice):
                 is_file = choice == "File"
                 return (
@@ -91,13 +101,14 @@ class UiLineIdentifierPage:
                     gr.update(visible=choice == "File"),
                     gr.update(visible=choice == "File"),
                     gr.update(visible=choice == "File"),
-                    gr.update(choices=["New", "Existing"] if is_file else ["New"], value="New")
+                    gr.update(choices=["New", "Existing"] if is_file else ["New"], value="New"),
+                    gr.update(visible=is_file)  # Toggle refresh button
                 )
 
             input_type.change(
                 on_input_type_change,
                 inputs=input_type,
-                outputs=[input_text, input_file, start_section, end_section, output_type]
+                outputs=[input_text, input_file, start_section, end_section, output_type, refresh_button]
             )
 
             output_type.change(
@@ -109,10 +120,16 @@ class UiLineIdentifierPage:
                 outputs=[new_output, existing_output]
             )
 
+            # Hook up refresh button
+            refresh_button.click(
+                self.refresh_folder_choices,
+                outputs=[existing_output]
+            )
+
             max_retries = gr.Textbox(
                 value="5",
                 label="Max Retries If No Narrator",
-                info="Retries if no narrator is detected — too many retries may misclassify valid chunks."
+                info="Number of times to retry if there is no narrator in the output. May not want to be too high, as while no narrator in the output is usually a mistake, this is not always the case. Small chunk sizes have a higher chance of having no narrator and without it being a mistake"
             )
 
             run_button = gr.Button("Identify Character Lines")

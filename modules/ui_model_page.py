@@ -53,6 +53,11 @@ class UiModelPage:
 
         return f"Loaded model: {llm}"
 
+    def refresh_model_list(self):
+        updated_models = get_files_in_directory(str(models_path), [".txt"])
+        updated_models.insert(0, "--- Select a model ---")
+        return gr.update(choices=updated_models)
+
     def get_gradio_page(self):
         # Get list of available model files
         available_models = get_files_in_directory(str(models_path), [".txt"])
@@ -73,6 +78,9 @@ class UiModelPage:
             model_path_str = gr.Textbox(label="Model path (local or HuggingFace)", visible=False)
             repo_id = gr.Textbox(label="HuggingFace Repo ID (required for HF models)", visible=False)
 
+            # Refresh button
+            refresh_button = gr.Button("🔄 Refresh Model List")
+
             # Dynamically show/hide inputs based on source type
             def toggle_model_fields(choice):
                 return (
@@ -83,17 +91,22 @@ class UiModelPage:
 
             model_source.change(toggle_model_fields, inputs=model_source, outputs=[model_dropdown, model_path_str, repo_id])
 
+            # Hook refresh button
+            refresh_button.click(
+                self.refresh_model_list,
+                outputs=[model_dropdown]
+            )
+
             # Model settings
             context_length = gr.Slider(0, 131072, value=4096, step=1, label="Context size")
             gpu_layers = gr.Slider(0, 100, value=0, label="GPU layers to offload")
             temperature = gr.Slider(0, 2, value=0.7, label="Temperature")
             seed = gr.Textbox(value="-1", label="Seed")
 
-            # Button and output
+            # Load model button and result
             load_button = gr.Button("Load Model")
             result = gr.Textbox(label="Status")
 
-            # Load model when button clicked
             load_button.click(
                 self.load_model,
                 inputs=[model_source, model_dropdown, model_path_str, repo_id, context_length, gpu_layers, temperature, seed],

@@ -79,3 +79,16 @@ class Session:
         Generate multi-speaker audio from previously processed text data.
         """
         return tts_generate_multi_speaker_audio(folder_path)
+        
+        
+    def create_output_folders():
+        """
+        Create output folders if they have not already been created.
+        """
+        folders = ['multi_speaker_outputs', 'single_speaker_outputs']
+        for folder in folders:
+            if not os.path.exists(folder):
+                os.makedirs(folder)
+                print(f"Created folder: {folder}")
+            else:
+                print(f"Folder already exists: {folder}")

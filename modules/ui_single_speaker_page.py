@@ -27,7 +27,7 @@ class UiSingleSpeakerPage:
         # Decide input source (text or file)
         if input_text:
             user_input = input_text
-            output_folder = None  # Do not use folder if just a quick text
+            output_folder = None  # Do not use folder if just using text input
         elif input_file:
             user_input = input_file.name
         else:
@@ -42,6 +42,10 @@ class UiSingleSpeakerPage:
         else:
             status_msg = "Audio generated from text input (no folder used)."
         return status_msg, audio_path
+
+    def refresh_folder_choices(self):
+        updated_folders = get_folders_in_directory(str(outputs_path))
+        return gr.update(choices=updated_folders)
 
     def get_gradio_page(self):
         voice_choices = get_files_in_directory(str(voices_path), [".txt"])
@@ -75,18 +79,21 @@ class UiSingleSpeakerPage:
                 value="New Folder",
                 label="Choose Output Folder Type"
             )
-            
+
             new_output = gr.Textbox(
                 label="Name for New Output Folder",
                 placeholder="e.g. my_custom_folder",
                 visible=False
             )
-            
+
             existing_output = gr.Dropdown(
                 choices=output_folders,
                 label="Select Existing Output Folder",
                 visible=True
             )
+
+            # Add refresh button
+            refresh_button = gr.Button("🔄 Refresh Folder List")
 
             def toggle_folder(choice):
                 return (
@@ -95,6 +102,12 @@ class UiSingleSpeakerPage:
                 )
             folder_choice.change(toggle_folder, inputs=folder_choice, outputs=[existing_output, new_output])
 
+            # Hook refresh button to update the dropdown
+            refresh_button.click(
+                self.refresh_folder_choices,
+                outputs=[existing_output]
+            )
+
             # Output components
             generate_button = gr.Button("Generate Audio")
             status = gr.Textbox(label="Status")
@@ -102,7 +115,7 @@ class UiSingleSpeakerPage:
 
             generate_button.click(
                 self.gradio_generate_audio,
-                inputs=[input_text, input_file, voice, existing_output, new_output],
+                inputs=[input_text, input_file, voice, new_output, existing_output],
                 outputs=[status, output_audio]
             )
 

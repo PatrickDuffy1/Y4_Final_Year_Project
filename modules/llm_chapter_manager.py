@@ -45,10 +45,13 @@ def identify_book_character_lines(llm, user_input, is_file, start_section, end_s
         # If end_section is -1, process till the end of the input
         end_section = len(text)
         
-    print(text)
+    #print(text)
             
     # Process each chapter or section
     for i in range(start_section, end_section):
+        
+        print("\n\n\nCurrently processing section", (i - start_section), "of", (end_section - start_section), "\n")
+        
         # Identify character lines using the LLM
         character_lines = identify_lines_in_chapter(text[i], llm, max_retries_if_no_narrator)
         

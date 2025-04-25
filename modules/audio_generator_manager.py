@@ -102,10 +102,9 @@ def extract_lines_and_voices(line_file, voice_file):
     # Build a mapping of speaker names to voice models
     speaker_to_voice = {entry['speaker'].lower(): entry['voice'] for entry in voice_data}
 
-    # Validate that Narrator voice is present
+    # Get narrator voice if it exists
     narrator_voice = speaker_to_voice.get("narrator")
-    if not narrator_voice or narrator_voice.lower() == "unassigned":
-        raise Exception("Narrator voice is unassigned or missing. Cannot proceed.")
+    narrator_available = narrator_voice and narrator_voice.lower() != "unassigned"
 
     # Assign voices to each line of dialogue
     for entry in line_data['lines']:
@@ -115,6 +114,8 @@ def extract_lines_and_voices(line_file, voice_file):
 
         voice = speaker_to_voice.get(speaker)
         if not voice or voice.lower() == "unassigned":
+            if not narrator_available:
+                raise Exception(f"Voice for speaker '{speaker}' is unassigned, and Narrator voice is not available to fall back on.")
             print(f"Voice for speaker '{speaker}' is unassigned. Using Narrator voice instead.")
             voice = narrator_voice
 
