@@ -1,11 +1,15 @@
 import gradio as gr
+import webbrowser
 from ui_single_speaker_page import UiSingleSpeakerPage
 from ui_model_page import UiModelPage
 from ui_line_identifier_page import UiLineIdentifierPage
 from ui_multi_speaker_page import UiMultiSpeakerPage
 
+LOCAL_HOST = "127.0.0.1"
+DEFAULT_PORT = "7860"
+
 class Ui:
-    def __init__(self, session):
+    def __init__(self, session, launch_ui_on_start_up):
         self._session = session
         
         # Initialize all UI page objects
@@ -30,4 +34,8 @@ class Ui:
             ]
         )
         
+        # Launch the UI (assuming it is on the default port) if the boolean is set
+        if launch_ui_on_start_up:
+            webbrowser.open(f"http://{LOCAL_HOST}:{DEFAULT_PORT}")
+            
         main_ui.launch()

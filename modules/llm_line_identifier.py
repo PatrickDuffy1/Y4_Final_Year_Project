@@ -7,23 +7,34 @@ from text_generator import generate_json_text
 def identify_lines_in_chapter(chapter, llm, max_retries_if_no_narrator):
     print("Start")
     
+    # Get the absolute path to the schema, relative to this file
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    schema_path = os.path.join(script_dir, '../llm_json_schemas/line_identifier_schema.json')
+    
     # Load the expected JSON schema from file for validation
-    with open('../llm_json_schemas/line_identifier_schema.json', 'r') as file:
+    with open(schema_path, 'r') as file:
         schema = json.load(file)
         
     # Instruction/query for the language model
     user_query = (
-        "Identify all of the lines in the text that are spoken by a character, and the character who spoke the line.\n"
-        "Also include any lines by the narrator.\n"
-        "Do not skip any lines. Do not make up any line that does not exist. The line should be the full line, not just part of it.\n"
-        "Identify the lines in order. Ensure that each line is written exactly as it is in the text, including punctuation.\n"
-        "Ensure you include the narrator's lines as well. Ensure you do not misclassify character and narrator lines.\n"
-        "For example, the line '\"Hello!\" John said' should have the 'Hello!' part labeled as a line by John, and the 'John said' part labeled as a narrator line. This is important.\n"
-        "DO NOT skip any lines. DO NOT skip a single word. Every word in the text should be in your final output.\n"
-        "Do not leave anything out. Do not skip a line. Ensure all characters and narrator lines are correctly assigned.\n"
-        "If you are unsure of the speaker of a line, label it as a Narrator line. Do not skip it.\n"
-        "NEVER return an empty lines array. Ensure you include the non-speaker (Narrator) lines in your output. Ensure that ALL Narrator lines are included:\n\n"
+        "Given the input text, identify and label every line in the exact order it appears. For each line:\n"
+        "- Extract the exact text, including all punctuation, without omissions or modifications.\n"
+        "- Assign each line a speaker: either the character who spoke it or Narrator.\n"
+        "- If a line includes both narration and dialogue (e.g., \"Hello!\" John said.), split and label the parts accordingly:\n"
+        "  - \"Hello!\" → Character: John\n"
+        "  - John said. → Narrator\n"
+        "\n"
+        "Important Instructions:\n"
+        "- Do NOT skip any lines or words.\n"
+        "- Do NOT invent or paraphrase any text.\n"
+        "- Include every line in your output — even those by the Narrator.\n"
+        "- If the speaker is ambiguous or unknown, default to Narrator.\n"
+        "- The final output must include every word from the input text.\n"
+        "- The output should NEVER be empty.\n"
+        "\n"
+        "Your goal is to produce a complete and accurate list of lines with correct speaker attributions.\n"
     )
+
 
     max_retries = 200  # How many times to retry a chunk if issues occur
     retry_if_no_narrator = True
@@ -38,8 +49,9 @@ def identify_lines_in_chapter(chapter, llm, max_retries_if_no_narrator):
         current_no_narrator_retries = 0  # Reset retry count for each chunk
         for attempt in range(max_retries):
             try:
-                print("\nCurrent chunk:", (i + 1), "of", len(chunk), "\nChunk text:\n")
-                print(chunk)
+                print("\nCurrent chunk:", (i + 1), "of", len(chunks), "\nChunk text (first 100 characters):\n")
+                print(chunk[:100] + "...")
+
                 print("\nProcessing...")
                 
                 # Ask the LLM to process this chunk

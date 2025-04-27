@@ -68,6 +68,9 @@ class UiLineIdentifierPage:
             retries
         )
 
+        if result and ("no model" in result.lower() or "error" in result.lower()):
+            return result
+
         return f"Lines identified and saved in: {book_folder_path or 'timestamped folder (auto-named)'}\n\n{result}"
 
     def refresh_folder_choices(self):
@@ -127,7 +130,7 @@ class UiLineIdentifierPage:
             )
 
             max_retries = gr.Textbox(
-                value="5",
+                value="10",
                 label="Max Retries If No Narrator",
                 info="Number of times to retry if there is no narrator in the output. May not want to be too high, as while no narrator in the output is usually a mistake, this is not always the case. Small chunk sizes have a higher chance of having no narrator and without it being a mistake"
             )

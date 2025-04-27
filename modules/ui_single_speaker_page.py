@@ -15,6 +15,10 @@ class UiSingleSpeakerPage:
     def gradio_generate_audio(self, input_text, input_file, voice, new_output_folder, existing_output_folder):
         output_folder = None
 
+        # Make sure a voice is selected
+        if not voice:
+            return "Please select a voice.", None
+
         # Determine output folder (existing or new)
         if new_output_folder:
             output_folder = outputs_path / new_output_folder
@@ -28,13 +32,15 @@ class UiSingleSpeakerPage:
         if input_text:
             user_input = input_text
             output_folder = None  # Do not use folder if just using text input
+            is_file = False
         elif input_file:
             user_input = input_file.name
+            is_file = True
         else:
             return "Please provide either text or a file.", None
 
         # Generate audio via session
-        audio_path = self._session.generate_audio(user_input, voice, str(output_folder) if output_folder else None)
+        audio_path = self._session.generate_audio(user_input, voice, is_file, str(output_folder) if output_folder else None)
 
         # Return result status
         if output_folder:
@@ -46,6 +52,10 @@ class UiSingleSpeakerPage:
     def refresh_folder_choices(self):
         updated_folders = get_folders_in_directory(str(outputs_path))
         return gr.update(choices=updated_folders)
+
+    def refresh_voice_choices(self):
+        updated_voices = get_files_in_directory(str(voices_path), [".txt"])
+        return gr.update(choices=updated_voices)
 
     def get_gradio_page(self):
         voice_choices = get_files_in_directory(str(voices_path), [".txt"])
@@ -72,6 +82,7 @@ class UiSingleSpeakerPage:
 
             # Choose voice file
             voice = gr.Dropdown(choices=voice_choices, label="Select Voice")
+            refresh_voices_button = gr.Button("🔄 Refresh Voices List")
 
             # Output folder handling
             folder_choice = gr.Radio(
@@ -91,9 +102,7 @@ class UiSingleSpeakerPage:
                 label="Select Existing Output Folder",
                 visible=True
             )
-
-            # Add refresh button
-            refresh_button = gr.Button("🔄 Refresh Folder List")
+            refresh_folders_button = gr.Button("🔄 Refresh Folder List")
 
             def toggle_folder(choice):
                 return (
@@ -102,8 +111,13 @@ class UiSingleSpeakerPage:
                 )
             folder_choice.change(toggle_folder, inputs=folder_choice, outputs=[existing_output, new_output])
 
-            # Hook refresh button to update the dropdown
-            refresh_button.click(
+            # Hook refresh buttons
+            refresh_voices_button.click(
+                self.refresh_voice_choices,
+                outputs=[voice]
+            )
+
+            refresh_folders_button.click(
                 self.refresh_folder_choices,
                 outputs=[existing_output]
             )

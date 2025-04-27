@@ -11,15 +11,15 @@ from pydub import AudioSegment
 
 # Define the directory where output audio files will be stored
 script_dir = Path(__file__).resolve().parent
-DEFAULT_OUTPUT_FILE_FOLDER = script_dir / ".." / "single_speaker_outputs"
+DEFAULT_OUTPUT_FILE_FOLDER = (script_dir / ".." / "single_speaker_outputs").resolve()
 DEFAULT_AUDIO_FILE_EXTENSION = ".wav"
 
 
 # Generate audio using a TTS model for either a single block of text or multiple sections/chapters
-def tts_generate_audio(user_input, voice, output_folder, output_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
+def tts_generate_audio(user_input, voice, is_file, output_folder, is_multi_speaker, output_file_type=DEFAULT_AUDIO_FILE_EXTENSION, tts_model_type="coqui"):
     
-    # If a file path is passed instead of a list of text sections, read the file content
-    if output_folder is not None and isinstance(user_input, list) == False:
+    # If a file path is passed, read the file content
+    if is_file and not is_multi_speaker:
         text = read_file(user_input)
     else:
         text = user_input
@@ -28,7 +28,7 @@ def tts_generate_audio(user_input, voice, output_folder, output_file_type=DEFAUL
     tts = load_tts_model(tts_model_type)
     
     # If the input is not a file, use the current timestamp as a name
-    if isinstance(text, list) == False:
+    if is_file == False:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
         output_file_path = DEFAULT_OUTPUT_FILE_FOLDER / f"{timestamp}{output_file_type}"
         return generate_audio(text, voice, tts, output_file_path, tts_model_type)
@@ -37,19 +37,18 @@ def tts_generate_audio(user_input, voice, output_folder, output_file_type=DEFAUL
     using_existing_folder = False
 
     # Set the output folder path
-    if output_folder != "":
+    if output_folder is not None:
         output_folder_path = output_folder
         using_existing_folder = True
     else:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
         output_folder_path = DEFAULT_OUTPUT_FILE_FOLDER / timestamp
+        
     
     # Create output folder if it doesn't exist
     if not os.path.exists(output_folder_path):
         os.makedirs(output_folder_path)
         using_existing_folder = False
-        
-    start_index = 0
     
     # If folder already has audio files, continue from where it left off
     if using_existing_folder:
@@ -57,10 +56,27 @@ def tts_generate_audio(user_input, voice, output_folder, output_file_type=DEFAUL
         print("Some sections already complete\nContinuing from section", start_index)
         print("Folder: ", output_folder_path)
         print("LENGTH: ", len(os.listdir(output_folder_path)), "\n\n\n\n")
-
+        
+        
+    print("\n\n\nTYPE str:", isinstance(text, str))
+        
+        
+    if not is_multi_speaker:
+        if isinstance(text, str):
+            text = [text]
+            
+        for i in range(0, len(text)):
+            output_file_path = (Path(output_folder_path) / f"{i}{output_file_type}").resolve()
+            generate_audio(text[i], voice, tts, output_file_path, tts_model_type)
+            
+        return "Complete"
+        
+    start_index = 0
+    print("\n\n\nTYPE str:", isinstance(text, str))
+    
     # Generate audio for each section of text
     for i in range(start_index, len(text)):
-        output_file_path = Path(output_folder_path) / f"{i}{output_file_type}"
+        output_file_path = (Path(output_folder_path) / f"{i}{output_file_type}").resolve()
         # Clean non-ASCII characters before generating audio
         cleaned_text = text[i].encode('ascii', 'ignore').decode()
         chapter_paths.append(generate_audio(cleaned_text, voice[i], tts, output_file_path, tts_model_type))
@@ -84,7 +100,7 @@ def tts_generate_multi_speaker_audio(folder_path):
         os.makedirs(temp_files_path, exist_ok=True)
         
         # Generate audio for each chapter and then stitch the files together
-        tts_generate_audio(lines, voices, temp_files_path + "/")
+        tts_generate_audio(lines, voices, True, temp_files_path + "/", True)
         stitch_wav_files(folder_path + "/temp_audio_" + str(i), i)
         
     return "Audio generation complete"
@@ -149,6 +165,9 @@ def stitch_wav_files(folder_path, index, delete_originals=True):
     combined_audio.export(output_path, format="wav")
 
     print(f"Audio files stitched successfully! Saved as: {output_path}")
+    
+    output_dir = os.path.realpath(output_dir)
+    os.startfile(output_dir)
 
     # Optionally remove temporary folder and files
     if delete_originals:

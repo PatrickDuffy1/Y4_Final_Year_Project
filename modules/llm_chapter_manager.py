@@ -36,6 +36,9 @@ def identify_book_character_lines(llm, user_input, is_file, start_section, end_s
     # Load input text, either from file or directly from input
     if is_file:
         text = read_file(user_input)
+        
+        if isinstance(text, str):
+            text = [text]
     else:
         text = [user_input]
         start_section = 0

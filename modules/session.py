@@ -54,12 +54,14 @@ class Session:
         self._llm.load_model()  # Trigger the model loading
         return self._llm  # Return the loaded model instance
 
-    def indentify_character_lines(self, user_input, is_file, output_folder="", start_section=0, end_section=-1, missing_narrator_max_retries=5):
+    def indentify_character_lines(self, user_input, is_file, output_folder="", start_section=0, end_section=-1, missing_narrator_max_retries=10):
         """
         Identify character lines in the given input (file or text) using the loaded LLM.
         """
+        self.create_output_folders()
+        
         if self._llm is not None:
-            return identify_book_character_lines(
+            output_path = identify_book_character_lines(
                 self._llm,
                 user_input,
                 is_file,
@@ -68,27 +70,43 @@ class Session:
                 output_folder,
                 missing_narrator_max_retries
             )
+            
+            output_path = os.path.realpath(output_path)
+            os.startfile(output_path)
+            
+            return output_path
+            
         return "No model loaded"  # Return error message if model is not set
 
-    def generate_audio(self, user_input, voice, output_folder, output_file_type=".wav"):
+    def generate_audio(self, user_input, voice, is_file, output_folder, output_file_type=".wav"):
         """
         Generate single-speaker audio from text using TTS.
         """
-        return tts_generate_audio(user_input, voice, output_folder, output_file_type)
+        self.create_output_folders()
+        
+        return tts_generate_audio(user_input, voice, is_file, output_folder, False, output_file_type)
 
     def generate_multi_speaker_audio(self, folder_path):
         """
         Generate multi-speaker audio from previously processed text data.
         """
+        
+        print("Generating multi-speaker audio")
+        
         return tts_generate_multi_speaker_audio(folder_path)
         
         
     def create_output_folders(self):
         """
-        Create output folders if they have not already been created.
+        Create output folders in the parent directory of the current file if they have not already been created.
         """
+        # Get the parent directory of the directory containing this file
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_file_dir)
+        
         folders = ['multi_speaker_outputs', 'single_speaker_outputs']
         for folder in folders:
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-                print(f"Created folder: {folder}")
+            path = os.path.join(parent_dir, folder)
+            if not os.path.exists(path):
+                os.makedirs(path)
+                print(f"Created folder: {path}")
