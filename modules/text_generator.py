@@ -1,7 +1,5 @@
-# Import necessary libraries for interacting with different LLMs (OpenAI and Gemini)
+# Import necessary libraries for interacting with different LLMs (OpenAI)
 import openai
-from google import genai
-from google.genai import types
 from enum import Enum
 
 
@@ -10,7 +8,6 @@ class Model_Type(Enum):
     LOCAL_FILE = 1       # Local or self-hosted model
     HUGGING_FACE = 2     # Model from Hugging Face
     OPEN_AI = 3          # OpenAI's API model
-    GEMINI = 4           # Google's Gemini model
 
 
 # Main function to generate a JSON-formatted response from a given prompt and LLM
@@ -22,8 +19,6 @@ def generate_json_text(initial_prompt, llm, schema):
         return generate_local_json_text(initial_prompt, llm, schema)
     elif model_type == Model_Type.OPEN_AI:
         return generate_open_ai_json_text(initial_prompt, llm, schema)
-    elif model_type == Model_Type.GEMINI:
-        return generate_gemini_json_text(initial_prompt, llm, schema)
     else:
         # Raise an error if model type is unsupported here
         raise ValueError(f"Invalid Model Type: {model_type}")
@@ -76,21 +71,3 @@ def generate_open_ai_json_text(initial_prompt, llm, schema):
     arguments_json = response["choices"][0]["message"]["function_call"]["arguments"]
     
     return arguments_json
-
-
-# Function to handle text generation using Google's Gemini API
-def generate_gemini_json_text(initial_prompt, llm, schema):
-    client = genai.Client(api_key=llm.model_config['api_key'])  # Initialize Gemini client
-
-    # Generate content using the Gemini API with schema enforcement
-    response = client.models.generate_content(
-        model = llm.model_config['model_name'],
-        contents = [initial_prompt],
-        config = types.GenerateContentConfig(
-            max_output_tokens = llm.model_config['max_tokens'],
-            temperature = llm.model_config['temperature'],
-            responseSchema = schema
-        )
-    )
-    
-    return response.text  # Return the text output from the Gemini model
